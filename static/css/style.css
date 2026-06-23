@@ -1,0 +1,78 @@
+/* General */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.3rem;
+}
+
+/* Cards */
+.card {
+    border-radius: 10px;
+    border: none;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    font-weight: bold;
+}
+
+/* Summary Cards */
+.card.bg-primary,
+.card.bg-success,
+.card.bg-danger {
+    border-radius: 10px;
+}
+
+.card.bg-primary h1,
+.card.bg-success h1,
+.card.bg-danger h1 {
+    font-size: 3rem;
+    font-weight: bold;
+}
+
+/* Charts */
+canvas {
+    max-height: 300px;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+}
+
+/* Footer */
+.footer {
+    border-top: 1px solid #dee2e6;
+}
+
+/* Badges */
+.badge {
+    font-size: 0.85rem;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Notifications */
+.card.border-primary {
+    border-left: 4px solid #0d6efd !important;
+}
+
+/* Comments */
+.card.mb-3 {
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Alerts */
+.alert {
+    border-radius: 10px;
+}
+
+/* Textarea */
+textarea.form-control {
+    border-radius: 8px;
+    resize: none;
+}

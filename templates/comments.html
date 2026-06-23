@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-chat-dots"></i> Comments</h2>
+
+<!-- Incident Details -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-exclamation-circle"></i> Incident Details
+    </div>
+    <div class="card-body">
+        <h5>{{ incident.title }}</h5>
+        <p>{{ incident.description }}</p>
+        <span class="badge bg-{{ 'success' if incident.status == 'resolved' else 'warning' if incident.status == 'in_progress' else 'danger' }}">
+            {{ incident.status }}
+        </span>
+        <span class="badge bg-{{ 'danger' if incident.priority == 'high' else 'warning' if incident.priority == 'medium' else 'success' }}">
+            {{ incident.priority }} priority
+        </span>
+    </div>
+</div>
+
+<!-- Add Comment Form -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-plus-circle"></i> Add a Comment
+    </div>
+    <div class="card-body">
+        <form action="/incident/{{ incident.id }}/comments/add" method="POST">
+            <div class="mb-3">
+                <textarea 
+                    name="comment_text" 
+                    class="form-control" 
+                    rows="3" 
+                    placeholder="Write your comment here..."
+                    required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-send"></i> Submit Comment
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Comments List -->
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-chat-left-text"></i> All Comments ({{ comments|length }})
+    </div>
+    <div class="card-body">
+        {% if comments %}
+            {% for comment in comments %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="card-subtitle text-primary">
+                            <i class="bi bi-person-circle"></i> {{ comment.full_name }}
+                        </h6>
+                        <small class="text-muted">
+                            <i class="bi bi-clock"></i> {{ comment.created_at }}
+                        </small>
+                    </div>
+                    <p class="card-text mt-2">{{ comment.comment_text }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-muted py-4">
+                <i class="bi bi-chat-slash" style="font-size: 2rem;"></i>
+                <p class="mt-2">No comments yet. Be the first to comment!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
