@@ -1,4 +1,4 @@
-
+--eacrh
 CREATE DATABASE IF NOT EXISTS incident_management;
 USE incident_management;
 
