@@ -1,0 +1,27 @@
+# ============================================================
+# CampusGuard .gitignore
+# ============================================================
+
+# Uploaded files — don't commit student attachments
+uploads/*
+!uploads/.gitkeep
+
+# Environment / config overrides
+# (if you ever split config into a .env file)
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# PHP logs / cache
+*.log
+error_log

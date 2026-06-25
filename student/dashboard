@@ -1,0 +1,72 @@
+<?php 
+// 1. Start recording the HTML
+ob_start(); 
+?>
+
+<div class="page active">
+  <div class="app-shell">
+    <div class="sidebar">
+      <div class="brand"><span class="crest">CG</span> CampusGuard</div>
+      <nav>
+        <a href="dashboard.php" class="active">📊 Dashboard</a>
+        <a href="report.php">➕ Report Incident</a>
+        <a href="myreports.php">📁 My Reports</a>
+        <a href="/campusguard/login.php">🚪 Log out</a>
+      </nav>
+      <div class="sidebar-foot">Logged in as<br><strong style="color:#fff;">Jane Wanjiru</strong></div>
+    </div>
+    <div class="main">
+      <div class="topstrip">
+        <h1>My Dashboard</h1>
+        <div class="user-chip"><div class="avatar">JW</div> Jane Wanjiru</div>
+      </div>
+      <div class="content">
+        <div class="stat-grid">
+          <div class="stat-card open"><div class="label">Open</div><div class="value">2</div></div>
+          <div class="stat-card progress"><div class="label">In Progress</div><div class="value">1</div></div>
+          <div class="stat-card resolved"><div class="label">Resolved</div><div class="value">4</div></div>
+          <div class="stat-card"><div class="label">Total Reports</div><div class="value">7</div></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recent Reports</h3>
+            <a href="report.php" class="btn btn-primary btn-sm">+ New Report</a>
+          </div>
+          <div class="incident-row status-open" onclick="window.location.href='incident-detail.php'" style="cursor:pointer;">
+            <span class="id">#108</span>
+            <div class="main-info">
+              <h4>WiFi unavailable in LT4</h4>
+              <div class="meta"><span>Network</span><span>·</span><span>LT4</span><span>·</span><span>2 hours ago</span></div>
+            </div>
+            <div class="badges"><span class="badge badge-high">High</span><span class="badge badge-open">Open</span></div>
+          </div>
+          <div class="incident-row status-progress" onclick="window.location.href='incident-detail.php'" style="cursor:pointer;">
+            <span class="id">#104</span>
+            <div class="main-info">
+              <h4>Suspicious phishing email received</h4>
+              <div class="meta"><span>Security</span><span>·</span><span>Student Email</span><span>·</span><span>1 day ago</span></div>
+            </div>
+            <div class="badges"><span class="badge badge-medium">Medium</span><span class="badge badge-progress">In Progress</span></div>
+          </div>
+          <div class="incident-row status-resolved">
+            <span class="id">#097</span>
+            <div class="main-info">
+              <h4>Projector not powering on</h4>
+              <div class="meta"><span>Infrastructure</span><span>·</span><span>Room 212</span><span>·</span><span>5 days ago</span></div>
+            </div>
+            <div class="badges"><span class="badge badge-low">Low</span><span class="badge badge-resolved">Resolved</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<?php 
+// 2. Stop recording and save the HTML
+$page_content = ob_get_clean(); 
+
+// 3. Load the master layout (Notice the ../ to go up one directory!)
+include '../includes/main.php'; 
+?>
