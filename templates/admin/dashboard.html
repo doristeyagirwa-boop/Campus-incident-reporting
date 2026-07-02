@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-speedometer2"></i> Admin Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-2 col-6 mb-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body text-center">
+                <h6 class="card-title">Total Incidents</h6>
+                <h2>{{ total_incidents }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6 mb-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body text-center">
+                <h6 class="card-title">Open</h6>
+                <h2>{{ open_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6 mb-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body text-center">
+                <h6 class="card-title">In Progress</h6>
+                <h2>{{ in_progress_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6 mb-3">
+        <div class="card text-white bg-success">
+            <div class="card-body text-center">
+                <h6 class="card-title">Resolved</h6>
+                <h2>{{ resolved_count }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6 mb-3">
+        <div class="card text-white bg-dark">
+            <div class="card-body text-center">
+                <h6 class="card-title">Users</h6>
+                <h2>{{ total_users }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-clock-history"></i> Recent Incidents
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Reported By</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in recent_incidents %}
+                <tr>
+                    <td>{{ incident.title }}</td>
+                    <td>{{ incident.category_name or '—' }}</td>
+                    <td>{{ incident.reporter_name or '—' }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if incident.status == 'resolved' else ('warning' if incident.status == 'in_progress' else 'secondary') }}">
+                            {{ incident.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-{{ 'danger' if incident.priority == 'high' else ('warning' if incident.priority == 'medium' else 'info') }}">
+                            {{ incident.priority }}
+                        </span>
+                    </td>
+                    <td>{{ incident.created_at }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center text-muted py-3">No incidents yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

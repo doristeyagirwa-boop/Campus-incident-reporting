@@ -139,5 +139,164 @@ def reports():
                            unresolved=unresolved,
                            total=total)
 
+# ─── ADMIN ──────────────────────────────────────────
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT COUNT(*) as total FROM incidents")
+    total_incidents = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as total FROM incidents WHERE status = 'open'")
+    open_count = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as total FROM incidents WHERE status = 'in_progress'")
+    in_progress_count = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as total FROM incidents WHERE status = 'resolved'")
+    resolved_count = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as total FROM users")
+    total_users = cursor.fetchone()['total']
+
+    cursor.execute("""
+        SELECT incidents.*, categories.name AS category_name,
+               reporter.full_name AS reporter_name
+        FROM incidents
+        LEFT JOIN categories ON incidents.category_id = categories.id
+        LEFT JOIN users AS reporter ON incidents.reported_by = reporter.id
+        ORDER BY incidents.created_at DESC
+        LIMIT 5
+    """)
+    recent_incidents = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template('admin/dashboard.html',
+                           total_incidents=total_incidents,
+                           open_count=open_count,
+                           in_progress_count=in_progress_count,
+                           resolved_count=resolved_count,
+                           total_users=total_users,
+                           recent_incidents=recent_incidents)
+
+@app.route('/admin/incidents')
+def admin_incidents():
+    status_filter = request.args.get('status', '')
+
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    query = """
+        SELECT incidents.*, categories.name AS category_name,
+               reporter.full_name AS reporter_name,
+               assignee.full_name AS assignee_name
+        FROM incidents
+        LEFT JOIN categories ON incidents.category_id = categories.id
+        LEFT JOIN users AS reporter ON incidents.reported_by = reporter.id
+        LEFT JOIN users AS assignee ON incidents.assigned_to = assignee.id
+    """
+    params = ()
+    if status_filter in ('open', 'in_progress', 'resolved'):
+        query += " WHERE incidents.status = %s"
+        params = (status_filter,)
+    query += " ORDER BY incidents.created_at DESC"
+
+    cursor.execute(query, params)
+    incidents_list = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return render_template('admin/incidents.html',
+                           incidents=incidents_list,
+                           status_filter=status_filter)
+
+@app.route('/admin/users')
+def admin_users():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users ORDER BY created_at DESC")
+    users_list = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('admin/users.html', users=users_list)
+
+@app.route('/admin/settings')
+def admin_settings():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM categories ORDER BY name")
+    categories_list = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return render_template('admin/settings.html', categories=categories_list)
+
+@app.route('/admin/settings/categories/add', methods=['POST'])
+def admin_add_category():
+    name = request.form['name']
+    description = request.form.get('description', '')
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO categories (name, description)
+        VALUES (%s, %s)
+    """, (name, description))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Category added successfully!")
+    return redirect(url_for('admin_settings'))
+
+@app.route('/admin/settings/categories/<int:category_id>/delete', methods=['POST'])
+def admin_delete_category(category_id):
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM categories WHERE id = %s", (category_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Category deleted successfully!")
+    return redirect(url_for('admin_settings'))
+
+@app.route('/admin/reports')
+def admin_reports():
+    conn = get_db()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT categories.name, COUNT(incidents.id) as total
+        FROM incidents
+        JOIN categories ON incidents.category_id = categories.id
+        GROUP BY categories.name
+    """)
+    by_category = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT MONTHNAME(created_at) as month, COUNT(id) as total
+        FROM incidents
+        GROUP BY MONTH(created_at), MONTHNAME(created_at)
+        ORDER BY MONTH(created_at)
+    """)
+    by_month = cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(*) as total FROM incidents")
+    total = cursor.fetchone()['total']
+
+    cursor.execute("SELECT COUNT(*) as resolved FROM incidents WHERE status = 'resolved'")
+    resolved = cursor.fetchone()['resolved']
+
+    unresolved = total - resolved
+
+    cursor.close()
+    conn.close()
+    return render_template('admin/reports.html',
+                           by_category=by_category,
+                           by_month=by_month,
+                           resolved=resolved,
+                           unresolved=unresolved,
+                           total=total)
+
 if __name__ == '__main__':
     app.run(debug=True)
