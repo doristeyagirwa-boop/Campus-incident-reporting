@@ -1,0 +1,37 @@
+from enum import Enum
+
+
+class IncidentStatus(str, Enum):
+    DRAFT = "DRAFT"
+    SUBMITTED = "SUBMITTED"
+    VALIDATED = "VALIDATED"
+    QUEUED = "QUEUED"
+    ASSIGNED = "ASSIGNED"
+    INVESTIGATING = "INVESTIGATING"
+    AWAITING_USER = "AWAITING_USER"
+    ESCALATED = "ESCALATED"
+    RESOLVED = "RESOLVED"
+    VERIFIED = "VERIFIED"
+    CLOSED = "CLOSED"
+    REOPENED = "REOPENED"
+    ARCHIVED = "ARCHIVED"
+
+
+class IncidentPriority(str, Enum):
+    P1 = "P1"
+    P2 = "P2"
+    P3 = "P3"
+    P4 = "P4"
+
+
+class IncidentCategory(str, Enum):
+    NETWORK = "NETWORK"
+    SECURITY = "SECURITY"
+    INFRASTRUCTURE = "INFRASTRUCTURE"
+    ACADEMIC = "ACADEMIC"
+    SOFTWARE = "SOFTWARE"
+    HARDWARE = "HARDWARE"
+    DATABASE = "DATABASE"
+    FACILITIES = "FACILITIES"
+    SAFETY = "SAFETY"
+    OTHER = "OTHER"
