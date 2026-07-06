@@ -57,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $error = 'Invalid role selected.';
             } elseif ($target['role'] === 'admin' && $new_role !== 'admin' && admin_count_admins($conn) <= 1) {
                 $error = 'Cannot remove the last admin account.';
+            } elseif ($new_role === $target['role']) {
+                $success = 'No role change needed.';
             } else {
                 $old_role = (string) $target['role'];
 
