@@ -613,3 +613,69 @@ img { max-width: 100%; }
   .topbar          { padding: 0 16px; }
   .content         { padding: 16px; }
 }
+
+/* Student tracking module */
+.tracking-card {
+    padding: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.tracking-card:last-child {
+    border-bottom: none;
+}
+
+.tracking-steps {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 18px 0;
+    overflow-x: auto;
+}
+
+.track-step {
+    min-width: 84px;
+    text-align: center;
+    color: var(--muted);
+}
+
+.track-step span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    background: var(--line);
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.track-step p {
+    font-size: 12px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.track-step.active span {
+    background: var(--navy);
+    color: #fff;
+}
+
+.track-step.active p {
+    color: var(--navy);
+}
+
+.track-line {
+    height: 2px;
+    min-width: 28px;
+    background: var(--line);
+}
+
+.tracking-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+}

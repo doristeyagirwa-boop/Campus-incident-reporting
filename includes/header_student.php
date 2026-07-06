@@ -38,6 +38,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
          class="<?= $current_page === 'my_reports.php' ? 'active' : '' ?>">
         <span class="nav-icon">📁</span> My Reports
       </a>
+      
+      <!-- New Tracking Link -->
+      <a href="<?= SITE_URL ?>/student/tracking.php"
+         class="<?= $current_page === 'tracking.php' ? 'active' : '' ?>">
+        <span class="nav-icon">📍</span> Tracking
+      </a>
+
       <a href="<?= SITE_URL ?>/student/notifications.php"
          class="<?= $current_page === 'notifications.php' ? 'active' : '' ?>">
         <span class="nav-icon">🔔</span> Notifications

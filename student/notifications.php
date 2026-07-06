@@ -7,14 +7,13 @@ require_once __DIR__ . '/../includes/db.php';
 $page_title = 'Notifications';
 $uid = (int) $_SESSION['user_id'];
 
-// Mark all as read when page is visited
-$conn->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?")->execute() ||
-$conn->query("UPDATE notifications SET is_read = 1 WHERE user_id = $uid");
-
-// Properly mark read
-$stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?");
+// Mark all notifications as read when the page is visited.
+$stmt = $conn->prepare(
+    "UPDATE notifications SET is_read = 1 WHERE user_id = ?"
+);
 $stmt->bind_param('i', $uid);
 $stmt->execute();
+$stmt->close();
 
 // Fetch all notifications
 $stmt2 = $conn->prepare(
