@@ -32,6 +32,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
          class="<?= $current_page === 'reports.php' ? 'active' : '' ?>">
          <span class="nav-icon">📈</span> Reports
       </a>
+      <a href="<?= SITE_URL ?>/admin/intelligence.php"
+         class="<?= $current_page === 'intelligence.php' ? 'active' : '' ?>">
+         <span class="nav-icon">🧠</span> Intelligence
+      </a>
       <a href="<?= SITE_URL ?>/admin/incidents.php"
          class="<?= $current_page === 'incidents.php' ? 'active' : '' ?>">
         <span class="nav-icon">🗂️</span> Manage Incidents

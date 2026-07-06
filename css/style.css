@@ -768,3 +768,66 @@ img { max-width: 100%; }
     color: #2563eb;
     font-weight: 800;
 }
+
+/* Intelligence module */
+.intelligence-card {
+    padding: 22px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+}
+
+.intelligence-card:last-child {
+    border-bottom: none;
+}
+
+.intelligence-card h4 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    letter-spacing: -0.02em;
+}
+
+.intel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.intel-grid > div {
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.intel-grid strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--navy);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.intel-grid p {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.learning-signal {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #eef2ff;
+    color: #3730a3;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+    .intel-grid {
+        grid-template-columns: 1fr;
+    }
+}
