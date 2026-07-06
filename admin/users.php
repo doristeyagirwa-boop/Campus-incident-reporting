@@ -3,145 +3,220 @@ require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_role('admin');
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/audit_helpers.php';
 
-$page_title = 'Manage Users';
-$success = $error = '';
+$page_title = 'User Management';
 
-// Handle role change
+function admin_safe(string|null $value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+$error = '';
+$success = '';
+
+$current_admin_id = (int) $_SESSION['user_id'];
+
+function admin_count_admins(mysqli $conn): int
+{
+    $result = $conn->query("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+    if (!$result) {
+        return 0;
+    }
+
+    $row = $result->fetch_row();
+    return (int) ($row[0] ?? 0);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $target_id  = (int) ($_POST['user_id'] ?? 0);
-    $new_role   = $_POST['role'] ?? '';
-    $valid_roles = ['student', 'technician', 'admin'];
+    $action = $_POST['action'] ?? '';
+    $target_user_id = isset($_POST['user_id']) ? (int) $_POST['user_id'] : 0;
 
-    if (!$target_id || !in_array($new_role, $valid_roles)) {
-        $error = 'Invalid request.';
-    } elseif ($target_id === (int) $_SESSION['user_id']) {
-        $error = 'You cannot change your own role.';
+    if ($target_user_id <= 0) {
+        $error = 'Invalid user selected.';
     } else {
-        $stmt = $conn->prepare("UPDATE users SET role = ? WHERE user_id = ?");
-        $stmt->bind_param('si', $new_role, $target_id);
-        $stmt->execute() ? $success = 'User role updated.' : $error = 'Update failed.';
+        $stmt = $conn->prepare(
+            "SELECT user_id, fullname, email, role
+             FROM users
+             WHERE user_id = ?
+             LIMIT 1"
+        );
+
+        $stmt->bind_param('i', $target_user_id);
+        $stmt->execute();
+        $target = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$target) {
+            $error = 'User not found.';
+        } elseif ($action === 'change_role') {
+            $new_role = $_POST['role'] ?? '';
+            $allowed_roles = ['student', 'technician', 'admin'];
+
+            if (!in_array($new_role, $allowed_roles, true)) {
+                $error = 'Invalid role selected.';
+            } elseif ($target['role'] === 'admin' && $new_role !== 'admin' && admin_count_admins($conn) <= 1) {
+                $error = 'Cannot remove the last admin account.';
+            } else {
+                $old_role = (string) $target['role'];
+
+                $stmt = $conn->prepare(
+                    "UPDATE users
+                     SET role = ?
+                     WHERE user_id = ?"
+                );
+
+                $stmt->bind_param('si', $new_role, $target_user_id);
+                $stmt->execute();
+                $stmt->close();
+
+                audit_log(
+                    $conn,
+                    'USER_ROLE_CHANGED',
+                    'user',
+                    $target_user_id,
+                    'Changed role for ' . $target['email'] . ' from ' . $old_role . ' to ' . $new_role
+                );
+
+                $success = 'User role updated successfully.';
+            }
+        } elseif ($action === 'delete_user') {
+            if ($target_user_id === $current_admin_id) {
+                $error = 'You cannot delete your own active admin account.';
+            } elseif ($target['role'] === 'admin' && admin_count_admins($conn) <= 1) {
+                $error = 'Cannot delete the last admin account.';
+            } else {
+                audit_log(
+                    $conn,
+                    'USER_DELETED',
+                    'user',
+                    $target_user_id,
+                    'Deleted user ' . $target['email'] . ' with role ' . $target['role']
+                );
+
+                $stmt = $conn->prepare(
+                    "DELETE FROM users
+                     WHERE user_id = ?"
+                );
+
+                $stmt->bind_param('i', $target_user_id);
+                $stmt->execute();
+                $stmt->close();
+
+                $success = 'User deleted successfully.';
+            }
+        }
     }
 }
 
-// Handle delete
-if (isset($_GET['delete'])) {
-    $del_id = (int) $_GET['delete'];
-    if ($del_id && $del_id !== (int) $_SESSION['user_id']) {
-        $conn->prepare("DELETE FROM users WHERE user_id = ?")->execute();
-        $ds = $conn->prepare("DELETE FROM users WHERE user_id = ?");
-        $ds->bind_param('i', $del_id);
-        $ds->execute();
-        $success = 'User deleted.';
-    }
-}
+$role_filter = $_GET['role'] ?? '';
+$search = trim($_GET['search'] ?? '');
 
-$search = trim($_GET['q'] ?? '');
-$filter_role = $_GET['role'] ?? '';
-
-$where  = ['1=1'];
+$sql = "SELECT user_id, fullname, student_no, email, role, created_at FROM users WHERE 1=1";
 $params = [];
-$types  = '';
+$types = '';
 
-if ($search)      { $where[] = '(fullname LIKE ? OR email LIKE ?)'; $params[] = "%$search%"; $params[] = "%$search%"; $types .= 'ss'; }
-if ($filter_role) { $where[] = 'role = ?'; $params[] = $filter_role; $types .= 's'; }
-
-$sql = "SELECT *, (SELECT COUNT(*) FROM incidents WHERE user_id = users.user_id) AS inc_count
-        FROM users WHERE " . implode(' AND ', $where) . " ORDER BY role, fullname";
-
-if ($types) {
-    $stmt2 = $conn->prepare($sql);
-    $stmt2->bind_param($types, ...$params);
-    $stmt2->execute();
-    $users = $stmt2->get_result();
-} else {
-    $users = $conn->query($sql);
+if ($role_filter !== '' && in_array($role_filter, ['student', 'technician', 'admin'], true)) {
+    $sql .= " AND role = ?";
+    $params[] = $role_filter;
+    $types .= 's';
 }
+
+if ($search !== '') {
+    $sql .= " AND (fullname LIKE ? OR email LIKE ? OR student_no LIKE ?)";
+    $like = '%' . $search . '%';
+    $params[] = $like;
+    $params[] = $like;
+    $params[] = $like;
+    $types .= 'sss';
+}
+
+$sql .= " ORDER BY created_at DESC, user_id DESC";
+
+$stmt = $conn->prepare($sql);
+
+if ($params) {
+    $stmt->bind_param($types, ...$params);
+}
+
+$stmt->execute();
+$users = $stmt->get_result();
 
 include __DIR__ . '/../includes/header_admin.php';
 ?>
 
-<?php if ($error):   ?><div class="form-error mb-16"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-<?php if ($success): ?><div class="form-success mb-16"><?= htmlspecialchars($success) ?></div><?php endif; ?>
+<?php if ($error): ?>
+  <div class="form-error"><?= admin_safe($error) ?></div>
+<?php endif; ?>
 
-<form method="GET" class="filter-bar">
-  <input type="search" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Search by name or email…">
-  <select name="role" onchange="this.form.submit()">
-    <option value="">All Roles</option>
-    <option value="student"    <?= $filter_role === 'student'    ? 'selected' : '' ?>>Student</option>
-    <option value="technician" <?= $filter_role === 'technician' ? 'selected' : '' ?>>Technician</option>
-    <option value="admin"      <?= $filter_role === 'admin'      ? 'selected' : '' ?>>Admin</option>
+<?php if ($success): ?>
+  <div class="form-success"><?= admin_safe($success) ?></div>
+<?php endif; ?>
+
+<form class="filter-bar" method="get">
+  <input type="text" name="search" placeholder="Search name, email, student number"
+         value="<?= admin_safe($search) ?>">
+
+  <select name="role">
+    <option value="">All roles</option>
+    <option value="student" <?= $role_filter === 'student' ? 'selected' : '' ?>>Students</option>
+    <option value="technician" <?= $role_filter === 'technician' ? 'selected' : '' ?>>Technicians</option>
+    <option value="admin" <?= $role_filter === 'admin' ? 'selected' : '' ?>>Admins</option>
   </select>
-  <button type="submit" class="btn btn-outline btn-sm">Search</button>
-  <?php if ($search || $filter_role): ?>
-  <a href="<?= SITE_URL ?>/admin/users.php" class="btn btn-sm" style="background:var(--line);">Clear</a>
-  <?php endif; ?>
+
+  <button class="btn btn-primary btn-sm" type="submit">Filter</button>
+  <a class="btn btn-outline btn-sm" href="<?= SITE_URL ?>/admin/users.php">Reset</a>
 </form>
 
 <div class="panel">
-  <table class="data-table">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Name</th>
-        <th>Student / Staff No.</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Incidents</th>
-        <th>Joined</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-    <?php if ($users->num_rows === 0): ?>
-    <tr><td colspan="8" style="text-align:center; padding:28px; color:var(--muted);">No users found.</td></tr>
-    <?php else: ?>
-    <?php while ($u = $users->fetch_assoc()): ?>
-    <tr>
-      <td><?= $u['user_id'] ?></td>
-      <td>
-        <div class="flex-center">
-          <div class="avatar" style="width:28px;height:28px;font-size:11px;
-            <?= $u['role']==='admin' ? 'background:var(--navy);color:#fff;' : ($u['role']==='technician'?'background:var(--status-resolved);color:#fff;':'') ?>">
-            <?= strtoupper(substr($u['fullname'], 0, 2)) ?>
+  <div class="panel-head">
+    <h3>User Management</h3>
+  </div>
+
+  <?php if ($users->num_rows === 0): ?>
+    <div class="empty-state">
+      <p>No users found.</p>
+    </div>
+  <?php else: ?>
+    <?php while ($user = $users->fetch_assoc()): ?>
+      <div class="user-admin-row">
+        <div class="user-admin-main">
+          <div class="avatar"><?= strtoupper(substr($user['fullname'], 0, 1)) ?></div>
+          <div>
+            <h4><?= admin_safe($user['fullname']) ?></h4>
+            <p class="text-muted text-sm">
+              <?= admin_safe($user['email']) ?>
+              <?php if (!empty($user['student_no'])): ?>
+                · <?= admin_safe($user['student_no']) ?>
+              <?php endif; ?>
+            </p>
           </div>
-          <?= htmlspecialchars($u['fullname']) ?>
         </div>
-      </td>
-      <td><?= htmlspecialchars($u['student_no']) ?></td>
-      <td><?= htmlspecialchars($u['email']) ?></td>
-      <td>
-        <?php if ($u['user_id'] == $_SESSION['user_id']): ?>
-          <span class="badge b-progress"><?= ucfirst($u['role']) ?> (you)</span>
-        <?php else: ?>
-        <form method="POST" style="display:inline;">
-          <input type="hidden" name="user_id" value="<?= $u['user_id'] ?>">
-          <select name="role" onchange="this.form.submit()" style="font-size:13px;padding:4px 8px;border:1px solid var(--line);border-radius:4px;">
-            <option value="student"    <?= $u['role']==='student'    ? 'selected':'' ?>>Student</option>
-            <option value="technician" <?= $u['role']==='technician' ? 'selected':'' ?>>Technician</option>
-            <option value="admin"      <?= $u['role']==='admin'      ? 'selected':'' ?>>Admin</option>
-          </select>
-        </form>
-        <?php endif; ?>
-      </td>
-      <td><?= $u['inc_count'] ?></td>
-      <td><?= date('d M Y', strtotime($u['created_at'])) ?></td>
-      <td>
-        <?php if ($u['user_id'] != $_SESSION['user_id']): ?>
-        <a href="?delete=<?= $u['user_id'] ?>&<?= http_build_query(['q'=>$search,'role'=>$filter_role]) ?>"
-           class="btn btn-danger btn-sm"
-           data-confirm="Delete <?= htmlspecialchars($u['fullname']) ?>? This also deletes all their incidents.">
-          Delete
-        </a>
-        <?php else: ?>
-        <span class="text-muted text-sm">—</span>
-        <?php endif; ?>
-      </td>
-    </tr>
+
+        <div class="user-admin-actions">
+          <form method="post" class="inline-form">
+            <input type="hidden" name="action" value="change_role">
+            <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
+
+            <select name="role">
+              <option value="student" <?= $user['role'] === 'student' ? 'selected' : '' ?>>Student</option>
+              <option value="technician" <?= $user['role'] === 'technician' ? 'selected' : '' ?>>Technician</option>
+              <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+            </select>
+
+            <button class="btn btn-outline btn-sm" type="submit">Save Role</button>
+          </form>
+
+          <form method="post"
+                onsubmit="return confirm('Delete this user? This action affects the database immediately.');">
+            <input type="hidden" name="action" value="delete_user">
+            <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
+            <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+          </form>
+        </div>
+      </div>
     <?php endwhile; ?>
-    <?php endif; ?>
-    </tbody>
-  </table>
+  <?php endif; ?>
 </div>
 
 <?php include __DIR__ . '/../includes/footer_admin.php'; ?>
