@@ -679,3 +679,27 @@ img { max-width: 100%; }
     font-size: 13px;
     color: var(--muted);
 }
+
+/* Reporting module */
+.report-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.report-row:last-child {
+    border-bottom: none;
+}
+
+.report-row span {
+    color: var(--text);
+    font-size: 14px;
+}
+
+.report-row strong {
+    font-size: 15px;
+    color: var(--navy);
+}
