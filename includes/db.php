@@ -1,14 +1,12 @@
 <?php
 require_once __DIR__ . '/config.php';
 
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+mysqli_report(MYSQLI_REPORT_OFF);
 
-if ($conn->connect_error) {
-    die('<div style="font-family:sans-serif;padding:40px;color:#c00;">
-        <h2>Database Connection Failed</h2>
-        <p>' . htmlspecialchars($conn->connect_error) . '</p>
-        <p>Check your settings in <code>includes/config.php</code></p>
-    </div>');
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+
+if ($conn->connect_errno) {
+    die('Database connection failed: ' . htmlspecialchars($conn->connect_error));
 }
 
 $conn->set_charset('utf8mb4');

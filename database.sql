@@ -88,6 +88,35 @@ CREATE TABLE IF NOT EXISTS notifications (
         ON DELETE CASCADE
 );
 
+
+CREATE TABLE IF NOT EXISTS incident_intelligence (
+    intelligence_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    technician_id INT NOT NULL,
+    category_id INT NOT NULL,
+    status_before VARCHAR(50) DEFAULT NULL,
+    root_cause TEXT NOT NULL,
+    resolution_summary TEXT NOT NULL,
+    prevention_recommendation TEXT DEFAULT NULL,
+    learning_signal TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_intelligence_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_intelligence_technician
+        FOREIGN KEY (technician_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_intelligence_category
+        FOREIGN KEY (category_id)
+        REFERENCES categories(category_id)
+        ON DELETE CASCADE
+);
+
 INSERT INTO categories (category_name, icon, description) VALUES
 ('IT / Network', '💻', 'WiFi, systems, internet, software, and hardware issues'),
 ('Facilities', '🏢', 'Buildings, rooms, water, power, furniture, or maintenance issues'),
@@ -97,6 +126,6 @@ INSERT INTO categories (category_name, icon, description) VALUES
 ON DUPLICATE KEY UPDATE category_name = VALUES(category_name);
 
 INSERT INTO users (fullname, student_no, email, password, role) VALUES
-('Student Demo', '190439', '190439@student.school.ac.ke', '$2y$10$replace_this_hash_before_live', 'student'),
-('Admin Demo', 'ADM001', 'admin@school.ac.ke', '$2y$10$replace_this_hash_before_live', 'admin'),
-('Technician Demo', 'ICT001', 'technician@school.ac.ke', '$2y$10$replace_this_hash_before_live', 'technician');
+('Student Demo', '190439', '190439@student.school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'student'),
+('Admin Demo', 'ADM001', 'admin@school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'admin'),
+('Technician Demo', 'ICT001', 'technician@school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'technician');
