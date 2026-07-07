@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helpers.php';
 require_once __DIR__ . '/../includes/intelligence_engine.php';
 require_once __DIR__ . '/../includes/department_allocator.php';
+require_once __DIR__ . '/../includes/dining_alerts.php';
 
 $page_title = 'Report an Incident';
 $error = $success = '';

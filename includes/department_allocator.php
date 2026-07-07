@@ -104,6 +104,133 @@ function fetch_incident_for_duty(mysqli $conn, int $incident_id): ?array
     return $incident ?: null;
 }
 
+function detect_dining_location_from_incident(mysqli $conn, int $incident_id): ?array
+{
+    $stmt = $conn->prepare(
+        "SELECT title, description, location
+         FROM incidents
+         WHERE incident_id = ?
+         LIMIT 1"
+    );
+
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param('i', $incident_id);
+    $stmt->execute();
+    $incident = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$incident) {
+        return null;
+    }
+
+    $text = strtolower(
+        (string) $incident['title'] . ' ' .
+        (string) $incident['description'] . ' ' .
+        (string) $incident['location']
+    );
+
+    $code = null;
+
+    if (str_contains($text, 'cafe one') || str_contains($text, 'café one')) {
+        $code = 'CAFE_ONE';
+    } elseif (str_contains($text, 'cafe two') || str_contains($text, 'café two')) {
+        $code = 'CAFE_TWO';
+    } elseif (str_contains($text, 'cafe three') || str_contains($text, 'café three')) {
+        $code = 'CAFE_THREE';
+    } elseif (str_contains($text, 'main kitchen') || str_contains($text, 'production kitchen')) {
+        $code = 'MAIN_KITCHEN';
+    }
+
+    if (!$code) {
+        return null;
+    }
+
+    $location_stmt = $conn->prepare(
+        "SELECT dl.location_id, dl.code, dl.name, dl.manager_user_id,
+                u.email AS manager_email
+         FROM dining_locations dl
+         LEFT JOIN users u ON dl.manager_user_id = u.user_id
+         WHERE dl.code = ?
+           AND dl.is_active = 1
+         LIMIT 1"
+    );
+
+    if (!$location_stmt) {
+        return null;
+    }
+
+    $location_stmt->bind_param('s', $code);
+    $location_stmt->execute();
+    $location = $location_stmt->get_result()->fetch_assoc();
+    $location_stmt->close();
+
+    return $location ?: null;
+}
+
+function detect_finished_food_item(mysqli $conn, int $incident_id): ?string
+{
+    $stmt = $conn->prepare(
+        "SELECT title, description
+         FROM incidents
+         WHERE incident_id = ?
+         LIMIT 1"
+    );
+
+    if (!$stmt) {
+        return null;
+    }
+
+    $stmt->bind_param('i', $incident_id);
+    $stmt->execute();
+    $incident = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$incident) {
+        return null;
+    }
+
+    $text = strtolower((string) $incident['title'] . ' ' . (string) $incident['description']);
+
+    $items = [
+        'rice' => 'Rice',
+        'beans' => 'Beans',
+        'ugali' => 'Ugali',
+        'chapati' => 'Chapati',
+        'tea' => 'Tea',
+        'milk' => 'Milk',
+        'chicken' => 'Chicken',
+        'beef' => 'Beef',
+        'vegetables' => 'Vegetables',
+        'food' => 'Food',
+    ];
+
+    $finished_words = ['finished', 'done', 'out of stock', 'stock finished', 'not available', 'unavailable'];
+
+    $has_finished_signal = false;
+
+    foreach ($finished_words as $word) {
+        if (str_contains($text, $word)) {
+            $has_finished_signal = true;
+            break;
+        }
+    }
+
+    if (!$has_finished_signal) {
+        return null;
+    }
+
+    foreach ($items as $keyword => $label) {
+        if (str_contains($text, $keyword)) {
+            return $label;
+        }
+    }
+
+    return 'Food';
+}
+
 function allocate_incident_duty(mysqli $conn, array $prediction): bool
 {
     $incident_id = (int) $prediction['incident_id'];
@@ -124,6 +251,17 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
     $department_id = (int) $department['department_id'];
     $prediction_id = fetch_latest_prediction_id($conn, $incident_id);
     $assigned_user_id = find_department_responder($conn, $department_id);
+    $dining_location = null;
+    $finished_food_item = null;
+
+    if ($route === 'Cafes, Dining & Retail') {
+        $dining_location = detect_dining_location_from_incident($conn, $incident_id);
+        $finished_food_item = detect_finished_food_item($conn, $incident_id);
+
+        if ($dining_location && !empty($dining_location['manager_user_id'])) {
+            $assigned_user_id = (int) $dining_location['manager_user_id'];
+        }
+    }
 
     /*
      * Prevent stale department duties.
@@ -206,6 +344,21 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
                 );
             }
         }
+    }
+
+    if (
+        $route === 'Cafes, Dining & Retail'
+        && $dining_location
+        && $finished_food_item
+        && function_exists('create_dining_stock_alert')
+    ) {
+        create_dining_stock_alert(
+            $conn,
+            (string) $dining_location['code'],
+            $finished_food_item,
+            'Finished',
+            $incident_id
+        );
     }
 
     if ($assigned_user_id && function_exists('create_notification')) {
