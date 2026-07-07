@@ -44,6 +44,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
          class="<?= $current_page === 'department_command.php' ? 'active' : '' ?>">
          <span class="nav-icon">🏢</span> Department Command
       </a>
+      <a href="<?= SITE_URL ?>/admin/dining_command.php"
+         class="<?= $current_page === 'dining_command.php' ? 'active' : '' ?>">
+         <span class="nav-icon">☕</span> Dining Command
+      </a>
       <a href="<?= SITE_URL ?>/admin/institution_accounts.php"
          class="<?= $current_page === 'institution_accounts.php' ? 'active' : '' ?>">
          <span class="nav-icon">🏛️</span> Institution Accounts

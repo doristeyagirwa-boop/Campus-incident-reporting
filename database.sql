@@ -200,6 +200,8 @@ CREATE TABLE IF NOT EXISTS dining_stock_alerts (
     incident_id INT DEFAULT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
+    UNIQUE KEY uq_dining_stock_alert_once (location_id, item_name, stock_status, incident_id),
+
     CONSTRAINT fk_stock_alert_location
         FOREIGN KEY (location_id)
         REFERENCES dining_locations(location_id)

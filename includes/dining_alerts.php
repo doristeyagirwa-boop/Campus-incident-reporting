@@ -28,12 +28,40 @@ function create_dining_stock_alert(
         return false;
     }
 
+    $location_id = (int) $location['location_id'];
+
     $message = $item_name . ' stock status at ' . $location['name'] . ': ' . $stock_status . '.';
 
     if ($stock_status === 'Finished') {
         $message .= ' Immediate replenishment required from Main Production Kitchen.';
     } elseif ($stock_status === 'Low') {
         $message .= ' Replenishment warning generated.';
+    }
+
+    /*
+     * Idempotency guard:
+     * One stock alert per location + item + status + incident.
+     * Prevents duplicate alerts when the neural engine re-analyzes incidents.
+     */
+    $existing = $conn->prepare(
+        "SELECT alert_id
+         FROM dining_stock_alerts
+         WHERE location_id = ?
+           AND item_name = ?
+           AND stock_status = ?
+           AND incident_id <=> ?
+         LIMIT 1"
+    );
+
+    if ($existing) {
+        $existing->bind_param('issi', $location_id, $item_name, $stock_status, $incident_id);
+        $existing->execute();
+        $existing_row = $existing->get_result()->fetch_assoc();
+        $existing->close();
+
+        if ($existing_row) {
+            return true;
+        }
     }
 
     $insert = $conn->prepare(
@@ -45,8 +73,6 @@ function create_dining_stock_alert(
     if (!$insert) {
         return false;
     }
-
-    $location_id = (int) $location['location_id'];
 
     $insert->bind_param(
         'isssi',
