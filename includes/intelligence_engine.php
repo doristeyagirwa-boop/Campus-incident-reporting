@@ -108,6 +108,22 @@ function aios_route_from_text(string $text, string $category): string
     }
 
     if (keyword_score($combined, [
+        'attendance', 'absent', 'absence', 'missed class', 'missed lecture',
+        'lecturer', 'teacher', 'class register', 'course attendance',
+        'unit attendance', 'marked absent', 'wrong attendance'
+    ], 1) > 0) {
+        return 'Lecturer / Course Owner Review';
+    }
+
+    if (keyword_score($combined, [
+        'registration', 'registrar', 'transcript', 'fee clearance',
+        'student record', 'official record', 'unit registration',
+        'wrong unit', 'missing unit', 'exam card', 'academic status'
+    ], 1) > 0) {
+        return 'Academic Registrar Escalation';
+    }
+
+    if (keyword_score($combined, [
         'fight', 'fighting', 'injury', 'hurt', 'blood', 'attack', 'weapon',
         'threat', 'violence', 'suspicious', 'theft', 'vandalism', 'fire',
         'alarm', 'medical', 'emergency', 'harassment', 'bullying'

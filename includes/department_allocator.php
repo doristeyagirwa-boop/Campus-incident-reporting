@@ -122,6 +122,13 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
 
     $status = $assigned_user_id ? 'Assigned' : 'Queued';
 
+    $risk_score = (float) ($prediction['predicted_risk_score'] ?? 0);
+    $predicted_priority = (string) ($prediction['predicted_priority'] ?? 'Medium');
+
+    if ($risk_score >= 80 || $predicted_priority === 'High') {
+        $status = $assigned_user_id ? 'In Progress' : 'Queued';
+    }
+
     $summary = 'AIOS routed this incident to ' . $department['name'] .
         '. Recommended route: ' . $route .
         '. Recommended action: ' . $prediction['recommended_action'];
@@ -157,6 +164,26 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
 
     if (!$ok) {
         return false;
+    }
+
+    if (($risk_score >= 80 || $predicted_priority === 'High') && function_exists('create_notification')) {
+        $admin_result = $conn->query(
+            "SELECT user_id
+             FROM users
+             WHERE role = 'admin'
+             ORDER BY user_id ASC"
+        );
+
+        if ($admin_result) {
+            while ($admin = $admin_result->fetch_assoc()) {
+                create_notification(
+                    $conn,
+                    (int) $admin['user_id'],
+                    $incident_id,
+                    'CRITICAL AIOS escalation: incident #' . $incident_id . ' requires immediate command review.'
+                );
+            }
+        }
     }
 
     if ($assigned_user_id && function_exists('create_notification')) {

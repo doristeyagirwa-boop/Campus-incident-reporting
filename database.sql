@@ -131,6 +131,50 @@ INSERT INTO users (fullname, student_no, email, password, role) VALUES
 ('Technician Demo', 'ICT001', 'technician@school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'technician');
 
 
+
+CREATE TABLE IF NOT EXISTS academic_units (
+    unit_id INT AUTO_INCREMENT PRIMARY KEY,
+    unit_code VARCHAR(40) NOT NULL UNIQUE,
+    unit_name VARCHAR(160) NOT NULL,
+    school_name VARCHAR(160) NOT NULL DEFAULT 'School of Computing and Engineering Sciences',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS incident_academic_context (
+    context_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    student_user_id INT DEFAULT NULL,
+    lecturer_user_id INT DEFAULT NULL,
+    unit_id INT DEFAULT NULL,
+    attendance_impact ENUM('None','Low','Moderate','High','Critical') NOT NULL DEFAULT 'None',
+    registrar_required TINYINT(1) NOT NULL DEFAULT 0,
+    lecturer_required TINYINT(1) NOT NULL DEFAULT 0,
+    academic_notes TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_incident_academic_context (incident_id),
+
+    CONSTRAINT fk_academic_context_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_academic_context_student
+        FOREIGN KEY (student_user_id)
+        REFERENCES users(user_id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_academic_context_lecturer
+        FOREIGN KEY (lecturer_user_id)
+        REFERENCES users(user_id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_academic_context_unit
+        FOREIGN KEY (unit_id)
+        REFERENCES academic_units(unit_id)
+        ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS departments (
     department_id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(40) NOT NULL UNIQUE,
