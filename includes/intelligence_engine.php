@@ -99,28 +99,54 @@ function aios_route_from_text(string $text, string $category): string
 {
     $combined = normalize_text_for_aios($text . ' ' . $category);
 
-    if (keyword_score($combined, [
-        'wifi', 'network', 'router', 'server', 'computer', 'computers',
-        'internet', 'cyber', 'hacked', 'password', 'phishing', 'login',
-        'software', 'data breach', 'email server', 'system outage'
-    ], 1) > 0) {
-        return 'IT / Cyber Response';
-    }
-
+    /*
+     * Academic/registrar/lecturer routing must happen before IT.
+     * A real university incident may mention "Web Programming Lab",
+     * but the actual problem may be attendance, lecturer validation, CAT eligibility,
+     * registration, fee clearance, or official student records.
+     */
     if (keyword_score($combined, [
         'attendance', 'absent', 'absence', 'missed class', 'missed lecture',
         'lecturer', 'teacher', 'class register', 'course attendance',
-        'unit attendance', 'marked absent', 'wrong attendance'
+        'unit attendance', 'marked absent', 'wrong attendance',
+        'cat eligibility', 'lecture attendance', 'student attended'
     ], 1) > 0) {
+        if (keyword_score($combined, [
+            'registrar', 'official record', 'academic record', 'student record',
+            'cat eligibility', 'exam eligibility', 'transcript', 'registration',
+            'unit registration', 'fee clearance'
+        ], 1) > 0) {
+            return 'Academic Registrar Escalation';
+        }
+
         return 'Lecturer / Course Owner Review';
     }
 
     if (keyword_score($combined, [
         'registration', 'registrar', 'transcript', 'fee clearance',
         'student record', 'official record', 'unit registration',
-        'wrong unit', 'missing unit', 'exam card', 'academic status'
+        'wrong unit', 'missing unit', 'exam card', 'academic status',
+        'billing discrepancy', 'fees', 'finance clearance'
     ], 1) > 0) {
         return 'Academic Registrar Escalation';
+    }
+
+    if (keyword_score($combined, [
+        'food', 'meal', 'rice', 'beans', 'ugali', 'chapati', 'cafe',
+        'cafeteria', 'dining', 'spoiled', 'allergy', 'allergen',
+        'dirty table', 'utensil', 'overcharging', 'card terminal',
+        'expired', 'out of stock', 'stock finished', 'food finished',
+        'kitchen', 'serving line'
+    ], 1) > 0) {
+        return 'Cafes, Dining & Retail';
+    }
+
+    if (keyword_score($combined, [
+        'wifi', 'network', 'router', 'server', 'computer', 'computers',
+        'internet', 'cyber', 'hacked', 'password', 'phishing', 'login',
+        'software', 'data breach', 'email server', 'system outage'
+    ], 1) > 0) {
+        return 'IT / Cyber Response';
     }
 
     if (keyword_score($combined, [
@@ -142,18 +168,9 @@ function aios_route_from_text(string $text, string $category): string
 
     if (keyword_score($combined, [
         'classroom', 'projector', 'audio', 'course material', 'exam',
-        'cheating', 'plagiarism', 'library', 'registration', 'billing',
-        'transcript', 'administrative', 'academic'
+        'cheating', 'plagiarism', 'library', 'administrative', 'academic'
     ], 1) > 0) {
         return 'Academic & Administrative';
-    }
-
-    if (keyword_score($combined, [
-        'food', 'meal', 'cafe', 'cafeteria', 'dining', 'spoiled',
-        'allergy', 'allergen', 'dirty table', 'utensil', 'overcharging',
-        'card terminal', 'expired'
-    ], 1) > 0) {
-        return 'Cafes, Dining & Retail';
     }
 
     if (keyword_score($combined, [
@@ -218,24 +235,30 @@ function aios_route_from_text(string $text, string $category): string
 function aios_recommended_action(string $route, float $risk_score): string
 {
     if ($risk_score >= 80) {
-        return 'Immediate escalation required. Notify admin leadership, assign responsible department, and monitor until closure.';
+        return 'Immediate escalation required. Notify institutional command, assign responsible department, and monitor until closure.';
     }
 
     return match ($route) {
+        'Academic Registrar Escalation' =>
+            'Escalate to Academic Registrar. Validate attendance evidence, official student record, CAT/exam eligibility, unit registration, and required academic correction.',
+
+        'Lecturer / Course Owner Review' =>
+            'Notify lecturer or course owner. Validate attendance register, class participation evidence, unit context, and submit academic confirmation to registry if needed.',
+
         'IT / Cyber Response' =>
             'Assign IT technician. Check network/device/service logs, isolate affected area if needed, and capture root cause.',
 
         'Safety, Security & Crime' =>
-            'Notify security office immediately. Preserve incident details, assign safety officer, and escalate if threat is active.',
+            'Notify security office immediately. Preserve incident details, assign safety officer, and escalate active threats immediately.',
 
         'Campus Infrastructure & Maintenance' =>
-            'Assign maintenance team. Inspect facility asset, repair or isolate hazard, and update closure notes with prevention action.',
+            'Assign maintenance team. Inspect facility asset, isolate hazard if needed, repair, and update closure notes with prevention action.',
 
         'Academic & Administrative' =>
             'Route to academic administration. Validate records, class impact, exam/course context, and required corrective action.',
 
         'Cafes, Dining & Retail' =>
-            'Route to dining/retail supervisor. Inspect food safety, billing, stock, hygiene, or service issue and record action taken.',
+            'Route to dining/retail supervisor. Inspect food safety, stock, hygiene, billing, allergen, or service issue and record action taken.',
 
         'Sports, Recreation & Fitness' =>
             'Assign sports/recreation officer. Inspect equipment or facility, document injuries, and restrict unsafe use if necessary.',

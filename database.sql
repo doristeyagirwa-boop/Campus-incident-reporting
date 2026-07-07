@@ -175,6 +175,42 @@ CREATE TABLE IF NOT EXISTS incident_academic_context (
         ON DELETE SET NULL
 );
 
+
+CREATE TABLE IF NOT EXISTS dining_locations (
+    location_id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    location_type ENUM('Central Kitchen','Cafe','Retail Point') NOT NULL DEFAULT 'Cafe',
+    manager_user_id INT DEFAULT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_dining_location_manager
+        FOREIGN KEY (manager_user_id)
+        REFERENCES users(user_id)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS dining_stock_alerts (
+    alert_id INT AUTO_INCREMENT PRIMARY KEY,
+    location_id INT NOT NULL,
+    item_name VARCHAR(120) NOT NULL,
+    stock_status ENUM('Available','Low','Finished') NOT NULL DEFAULT 'Available',
+    alert_message TEXT NOT NULL,
+    incident_id INT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_stock_alert_location
+        FOREIGN KEY (location_id)
+        REFERENCES dining_locations(location_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_stock_alert_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE SET NULL
+);
+
 CREATE TABLE IF NOT EXISTS departments (
     department_id INT AUTO_INCREMENT PRIMARY KEY,
     code VARCHAR(40) NOT NULL UNIQUE,

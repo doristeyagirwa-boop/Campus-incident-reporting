@@ -110,6 +110,11 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
     $route = (string) $prediction['recommended_route'];
 
     $department = fetch_department_for_route($conn, $route);
+    /*
+     * University-grade escalation:
+     * If a lecturer attendance issue affects official records,
+     * registrar must also be notified through a second institutional duty.
+     */
     $incident = fetch_incident_for_duty($conn, $incident_id);
 
     if (!$department || !$incident) {
@@ -119,6 +124,23 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
     $department_id = (int) $department['department_id'];
     $prediction_id = fetch_latest_prediction_id($conn, $incident_id);
     $assigned_user_id = find_department_responder($conn, $department_id);
+
+    /*
+     * Prevent stale department duties.
+     * If a route changes from IT to Registrar, old incorrect department duties are removed.
+     * Secondary academic duties are created later when needed.
+     */
+    $cleanup_stmt = $conn->prepare(
+        "DELETE FROM incident_duties
+         WHERE incident_id = ?
+           AND department_id <> ?"
+    );
+
+    if ($cleanup_stmt) {
+        $cleanup_stmt->bind_param('ii', $incident_id, $department_id);
+        $cleanup_stmt->execute();
+        $cleanup_stmt->close();
+    }
 
     $status = $assigned_user_id ? 'Assigned' : 'Queued';
 
@@ -212,6 +234,104 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
             $incident_id,
             'Routed to ' . $department['name'] . ' with duty status ' . $status
         );
+    }
+
+    if ($route === 'Academic Registrar Escalation') {
+        $lecturer_department = fetch_department_for_route($conn, 'Lecturer / Course Owner Review');
+
+        if ($lecturer_department) {
+            $lecturer_department_id = (int) $lecturer_department['department_id'];
+            $lecturer_user_id = find_department_responder($conn, $lecturer_department_id);
+
+            $extra_summary = 'Secondary academic duty created because registrar escalation may require lecturer attendance validation.';
+
+            $extra_stmt = $conn->prepare(
+                "INSERT INTO incident_duties
+                 (incident_id, department_id, prediction_id, assigned_user_id, duty_status, duty_summary)
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    prediction_id = VALUES(prediction_id),
+                    assigned_user_id = VALUES(assigned_user_id),
+                    duty_status = VALUES(duty_status),
+                    duty_summary = VALUES(duty_summary),
+                    updated_at = NOW()"
+            );
+
+            if ($extra_stmt) {
+                $extra_status = $lecturer_user_id ? 'Assigned' : 'Queued';
+
+                $extra_stmt->bind_param(
+                    'iiiiss',
+                    $incident_id,
+                    $lecturer_department_id,
+                    $prediction_id,
+                    $lecturer_user_id,
+                    $extra_status,
+                    $extra_summary
+                );
+
+                $extra_stmt->execute();
+                $extra_stmt->close();
+
+                if ($lecturer_user_id && function_exists('create_notification')) {
+                    create_notification(
+                        $conn,
+                        $lecturer_user_id,
+                        $incident_id,
+                        'AIOS academic escalation: lecturer validation required for incident #' . $incident_id . '.'
+                    );
+                }
+            }
+        }
+    }
+
+    if ($route === 'Lecturer / Course Owner Review' && $risk_score >= 55) {
+        $registrar_department = fetch_department_for_route($conn, 'Academic Registrar Escalation');
+
+        if ($registrar_department) {
+            $registrar_department_id = (int) $registrar_department['department_id'];
+            $registrar_user_id = find_department_responder($conn, $registrar_department_id);
+
+            $extra_summary = 'Secondary registrar duty created because attendance/lecturer issue may affect official academic eligibility.';
+
+            $extra_stmt = $conn->prepare(
+                "INSERT INTO incident_duties
+                 (incident_id, department_id, prediction_id, assigned_user_id, duty_status, duty_summary)
+                 VALUES (?, ?, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    prediction_id = VALUES(prediction_id),
+                    assigned_user_id = VALUES(assigned_user_id),
+                    duty_status = VALUES(duty_status),
+                    duty_summary = VALUES(duty_summary),
+                    updated_at = NOW()"
+            );
+
+            if ($extra_stmt) {
+                $extra_status = $registrar_user_id ? 'Assigned' : 'Queued';
+
+                $extra_stmt->bind_param(
+                    'iiiiss',
+                    $incident_id,
+                    $registrar_department_id,
+                    $prediction_id,
+                    $registrar_user_id,
+                    $extra_status,
+                    $extra_summary
+                );
+
+                $extra_stmt->execute();
+                $extra_stmt->close();
+
+                if ($registrar_user_id && function_exists('create_notification')) {
+                    create_notification(
+                        $conn,
+                        $registrar_user_id,
+                        $incident_id,
+                        'AIOS registrar escalation: academic record review required for incident #' . $incident_id . '.'
+                    );
+                }
+            }
+        }
     }
 
     return true;
