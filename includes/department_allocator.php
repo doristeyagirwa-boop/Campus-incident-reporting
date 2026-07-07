@@ -487,5 +487,19 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
         }
     }
 
+    if (function_exists('create_academic_space_recommendation')) {
+        $space_message = create_academic_space_recommendation($conn, $incident_id);
+
+        if ($space_message && function_exists('audit_log')) {
+            audit_log(
+                $conn,
+                'AIOS_CLASSROOM_RELOCATION_RECOMMENDED',
+                'incident',
+                $incident_id,
+                $space_message
+            );
+        }
+    }
+
     return true;
 }

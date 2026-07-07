@@ -132,6 +132,86 @@ INSERT INTO users (fullname, student_no, email, password, role) VALUES
 
 
 
+
+CREATE TABLE IF NOT EXISTS classrooms (
+    room_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_code VARCHAR(60) NOT NULL UNIQUE,
+    building VARCHAR(120) NOT NULL,
+    room_name VARCHAR(160) NOT NULL,
+    capacity INT NOT NULL DEFAULT 40,
+    room_type ENUM('Lecture Room','Computer Lab','Seminar Room','Auditorium','Meeting Room') NOT NULL DEFAULT 'Lecture Room',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS class_sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    unit_id INT DEFAULT NULL,
+    lecturer_user_id INT DEFAULT NULL,
+    room_id INT NOT NULL,
+    day_of_week VARCHAR(20) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    session_title VARCHAR(180) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_class_session_unit
+        FOREIGN KEY (unit_id)
+        REFERENCES academic_units(unit_id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_class_session_lecturer
+        FOREIGN KEY (lecturer_user_id)
+        REFERENCES users(user_id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_class_session_room
+        FOREIGN KEY (room_id)
+        REFERENCES classrooms(room_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS classroom_status (
+    status_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    incident_id INT DEFAULT NULL,
+    status ENUM('Available','Occupied','Reserved','Maintenance') NOT NULL DEFAULT 'Available',
+    status_note TEXT DEFAULT NULL,
+    observed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_classroom_status_room
+        FOREIGN KEY (room_id)
+        REFERENCES classrooms(room_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_classroom_status_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS academic_relocation_recommendations (
+    recommendation_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    from_room_text VARCHAR(180) DEFAULT NULL,
+    recommended_room_id INT NOT NULL,
+    reason TEXT NOT NULL,
+    recommendation_message TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_academic_relocation_incident (incident_id),
+
+    CONSTRAINT fk_relocation_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_relocation_room
+        FOREIGN KEY (recommended_room_id)
+        REFERENCES classrooms(room_id)
+        ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS academic_units (
     unit_id INT AUTO_INCREMENT PRIMARY KEY,
     unit_code VARCHAR(40) NOT NULL UNIQUE,

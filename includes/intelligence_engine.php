@@ -99,12 +99,15 @@ function aios_route_from_text(string $text, string $category): string
 {
     $combined = normalize_text_for_aios($text . ' ' . $category);
 
-    /*
-     * Academic/registrar/lecturer routing must happen before IT.
-     * A real university incident may mention "Web Programming Lab",
-     * but the actual problem may be attendance, lecturer validation, CAT eligibility,
-     * registration, fee clearance, or official student records.
-     */
+    if (keyword_score($combined, [
+        'class occupied', 'classroom occupied', 'room occupied',
+        'lecture room occupied', 'venue conflict', 'room conflict',
+        'double booked', 'double-booked', 'room unavailable',
+        'classroom unavailable', 'students waiting outside',
+        'found another class inside', 'no classroom'
+    ], 1) > 0) {
+        return 'Lecturer / Course Owner Review';
+    }
     if (keyword_score($combined, [
         'attendance', 'absent', 'absence', 'missed class', 'missed lecture',
         'lecturer', 'teacher', 'class register', 'course attendance',
