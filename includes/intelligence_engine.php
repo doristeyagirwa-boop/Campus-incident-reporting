@@ -99,24 +99,101 @@ function aios_route_from_text(string $text, string $category): string
 {
     $combined = normalize_text_for_aios($text . ' ' . $category);
 
-    if (keyword_score($combined, ['wifi', 'network', 'router', 'server', 'computer', 'computers', 'internet', 'cyber', 'hacked', 'password'], 1) > 0) {
+    if (keyword_score($combined, [
+        'wifi', 'network', 'router', 'server', 'computer', 'computers',
+        'internet', 'cyber', 'hacked', 'password', 'phishing', 'login',
+        'software', 'data breach', 'email server', 'system outage'
+    ], 1) > 0) {
         return 'IT / Cyber Response';
     }
 
-    if (keyword_score($combined, ['fight', 'injury', 'hurt', 'blood', 'attack', 'weapon', 'threat'], 1) > 0) {
-        return 'Safety / Security Response';
+    if (keyword_score($combined, [
+        'fight', 'fighting', 'injury', 'hurt', 'blood', 'attack', 'weapon',
+        'threat', 'violence', 'suspicious', 'theft', 'vandalism', 'fire',
+        'alarm', 'medical', 'emergency', 'harassment', 'bullying'
+    ], 1) > 0) {
+        return 'Safety, Security & Crime';
     }
 
-    if (keyword_score($combined, ['bully', 'bullying', 'harassment', 'crying', 'threat', 'abuse'], 1) > 0) {
-        return 'Student Welfare / Counselling';
+    if (keyword_score($combined, [
+        'window', 'door', 'floor', 'pipe', 'water leak', 'power outage',
+        'electricity', 'heating', 'cooling', 'trash', 'restroom', 'pest',
+        'blocked drain', 'chair', 'desk', 'locker', 'light', 'elevator',
+        'signage'
+    ], 1) > 0) {
+        return 'Campus Infrastructure & Maintenance';
     }
 
-    if (keyword_score($combined, ['exam', 'cheating', 'plagiarism', 'ai plagiarism', 'academic'], 1) > 0) {
-        return 'Academic Integrity Review';
+    if (keyword_score($combined, [
+        'classroom', 'projector', 'audio', 'course material', 'exam',
+        'cheating', 'plagiarism', 'library', 'registration', 'billing',
+        'transcript', 'administrative', 'academic'
+    ], 1) > 0) {
+        return 'Academic & Administrative';
     }
 
-    if (keyword_score($combined, ['water', 'electricity', 'light', 'door', 'chair', 'desk', 'building'], 1) > 0) {
-        return 'Facilities / Maintenance';
+    if (keyword_score($combined, [
+        'food', 'meal', 'cafe', 'cafeteria', 'dining', 'spoiled',
+        'allergy', 'allergen', 'dirty table', 'utensil', 'overcharging',
+        'card terminal', 'expired'
+    ], 1) > 0) {
+        return 'Cafes, Dining & Retail';
+    }
+
+    if (keyword_score($combined, [
+        'gym', 'sports', 'fitness', 'track', 'court', 'pool', 'turf',
+        'sprain', 'fracture', 'concussion', 'locker room', 'team',
+        'hazing'
+    ], 1) > 0) {
+        return 'Sports, Recreation & Fitness';
+    }
+
+    if (keyword_score($combined, [
+        'event', 'election', 'crowd', 'overcrowding', 'stampede',
+        'sound system', 'speaker', 'performer', 'vip', 'noise',
+        'ballot', 'voter', 'shuttle during event'
+    ], 1) > 0) {
+        return 'Events, Elections & Gatherings';
+    }
+
+    if (keyword_score($combined, [
+        'vehicle', 'shuttle', 'parking', 'road', 'speed bump',
+        'driver', 'bicycle', 'pedestrian', 'collision', 'accident',
+        'fire lane'
+    ], 1) > 0) {
+        return 'Transportation & Logistics';
+    }
+
+    if (keyword_score($combined, [
+        'dorm', 'residence', 'roommate', 'room mate', 'housekeeping',
+        'lost key', 'broken lock', 'tailgating', 'noise complaint',
+        'partying', 'plumbing in room'
+    ], 1) > 0) {
+        return 'Student Residences';
+    }
+
+    if (keyword_score($combined, [
+        'tree', 'bush', 'irrigation', 'pathway', 'streetlamp',
+        'flooded walkway', 'weather damage', 'fallen branch',
+        'wildlife', 'monument', 'public art'
+    ], 1) > 0) {
+        return 'Grounds & Outdoor Spaces';
+    }
+
+    if (keyword_score($combined, [
+        'accessibility', 'ramp', 'accessible restroom', 'discrimination',
+        'bias', 'language barrier', 'translation', 'assistive',
+        'screen reader', 'hearing loop', 'disability'
+    ], 1) > 0) {
+        return 'Inclusion & Accessibility';
+    }
+
+    if (keyword_score($combined, [
+        'communication', 'policy', 'schedule', 'emergency alert',
+        'false alarm', 'announcement', 'email outage', 'app outage',
+        'information gap'
+    ], 1) > 0) {
+        return 'Communication & Feedback';
     }
 
     return 'General Administration Review';
@@ -125,22 +202,49 @@ function aios_route_from_text(string $text, string $category): string
 function aios_recommended_action(string $route, float $risk_score): string
 {
     if ($risk_score >= 80) {
-        return 'Immediate escalation required. Assign responsible officer, notify administrator, and monitor until closure.';
+        return 'Immediate escalation required. Notify admin leadership, assign responsible department, and monitor until closure.';
     }
 
-    if ($risk_score >= 55) {
-        return 'Assign to responsible technician or officer. Require progress note before resolution.';
-    }
+    return match ($route) {
+        'IT / Cyber Response' =>
+            'Assign IT technician. Check network/device/service logs, isolate affected area if needed, and capture root cause.',
 
-    if ($route === 'IT / Cyber Response') {
-        return 'Assign IT technician, inspect affected device/network area, capture root cause, and record resolution intelligence.';
-    }
+        'Safety, Security & Crime' =>
+            'Notify security office immediately. Preserve incident details, assign safety officer, and escalate if threat is active.',
 
-    if ($route === 'Student Welfare / Counselling') {
-        return 'Route to welfare/counselling team and preserve notes for follow-up.';
-    }
+        'Campus Infrastructure & Maintenance' =>
+            'Assign maintenance team. Inspect facility asset, repair or isolate hazard, and update closure notes with prevention action.',
 
-    return 'Review, assign owner, and track progress through normal incident workflow.';
+        'Academic & Administrative' =>
+            'Route to academic administration. Validate records, class impact, exam/course context, and required corrective action.',
+
+        'Cafes, Dining & Retail' =>
+            'Route to dining/retail supervisor. Inspect food safety, billing, stock, hygiene, or service issue and record action taken.',
+
+        'Sports, Recreation & Fitness' =>
+            'Assign sports/recreation officer. Inspect equipment or facility, document injuries, and restrict unsafe use if necessary.',
+
+        'Events, Elections & Gatherings' =>
+            'Route to events/security team. Review crowd control, logistics, election integrity, noise, or transport impact.',
+
+        'Transportation & Logistics' =>
+            'Assign transport/logistics officer. Review vehicle, shuttle, parking, road safety, or pedestrian conflict details.',
+
+        'Student Residences' =>
+            'Route to residence office. Assign housing/residence staff and document maintenance, access, noise, or community issue.',
+
+        'Grounds & Outdoor Spaces' =>
+            'Assign grounds team. Inspect landscape, lighting, weather damage, wildlife, or outdoor safety concern.',
+
+        'Inclusion & Accessibility' =>
+            'Escalate to accessibility/student affairs office. Preserve sensitive details and assign responsible support officer.',
+
+        'Communication & Feedback' =>
+            'Route to communications/admin office. Verify alert, system, schedule, or policy clarity issue and issue correction if needed.',
+
+        default =>
+            'Review, assign responsible owner, and track progress through normal incident workflow.',
+    };
 }
 
 function predict_priority_from_risk(float $risk_score): string
