@@ -315,6 +315,18 @@ $intelligence_stmt->bind_param('i', $id);
 $intelligence_stmt->execute();
 $intelligence_rows = $intelligence_stmt->get_result();
 
+$prediction_stmt = $conn->prepare(
+    "SELECT *
+     FROM incident_predictions
+     WHERE incident_id = ?
+     ORDER BY created_at DESC
+     LIMIT 1"
+);
+
+$prediction_stmt->bind_param('i', $id);
+$prediction_stmt->execute();
+$latest_prediction = $prediction_stmt->get_result()->fetch_assoc();
+
 include __DIR__ . '/../includes/header_admin.php';
 ?>
 
@@ -365,6 +377,132 @@ include __DIR__ . '/../includes/header_admin.php';
              class="btn btn-outline btn-sm">
             📎 View Attachment
           </a>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <div class="panel mb-24">
+      <div class="panel-head">
+        <h3>Latest Neural Prediction</h3>
+      </div>
+
+      <?php if (!$latest_prediction): ?>
+        <div class="empty-state" style="padding:28px;">
+          <p>No neural prediction has been generated for this incident yet.</p>
+          <p class="text-muted text-sm">
+            Go to Neural Engine and run analysis to generate a prediction.
+          </p>
+        </div>
+      <?php else: ?>
+        <div class="panel-body">
+          <div class="intel-grid">
+            <div>
+              <strong>Risk Score</strong>
+              <p><?= number_format((float) $latest_prediction['predicted_risk_score'], 2) ?>/100</p>
+            </div>
+
+            <div>
+              <strong>Predicted Priority</strong>
+              <p><?= admin_incident_safe($latest_prediction['predicted_priority']) ?></p>
+            </div>
+
+            <div>
+              <strong>Confidence</strong>
+              <p><?= number_format((float) $latest_prediction['confidence_score'], 2) ?>%</p>
+            </div>
+          </div>
+
+          <div class="learning-signal">
+            <strong>Recommended Route:</strong>
+            <?= admin_incident_safe($latest_prediction['recommended_route']) ?>
+          </div>
+
+          <div class="learning-signal">
+            <strong>Recommended Action:</strong>
+            <?= admin_incident_safe($latest_prediction['recommended_action']) ?>
+          </div>
+
+          <?php if (!empty($latest_prediction['suggested_root_cause'])): ?>
+            <div class="learning-signal">
+              <strong>Suggested Root Cause:</strong>
+              <?= admin_incident_safe($latest_prediction['suggested_root_cause']) ?>
+            </div>
+          <?php endif; ?>
+
+          <?php if (!empty($latest_prediction['similar_incident_id'])): ?>
+            <div class="learning-signal">
+              <strong>Similar Case:</strong>
+              Incident #<?= (int) $latest_prediction['similar_incident_id'] ?>
+            </div>
+          <?php endif; ?>
+
+          <div class="learning-signal">
+            <strong>Explanation:</strong>
+            <?= admin_incident_safe($latest_prediction['explanation']) ?>
+          </div>
+        </div>
+      <?php endif; ?>
+    </div>
+
+    <div class="panel mb-24">
+      <div class="panel-head">
+        <h3>Latest Neural Prediction</h3>
+      </div>
+
+      <?php if (!$latest_prediction): ?>
+        <div class="empty-state" style="padding:28px;">
+          <p>No neural prediction has been generated for this incident yet.</p>
+          <p class="text-muted text-sm">
+            Go to Neural Engine and run analysis to generate a prediction.
+          </p>
+        </div>
+      <?php else: ?>
+        <div class="panel-body">
+          <div class="intel-grid">
+            <div>
+              <strong>Risk Score</strong>
+              <p><?= number_format((float) $latest_prediction['predicted_risk_score'], 2) ?>/100</p>
+            </div>
+
+            <div>
+              <strong>Predicted Priority</strong>
+              <p><?= admin_incident_safe($latest_prediction['predicted_priority']) ?></p>
+            </div>
+
+            <div>
+              <strong>Confidence</strong>
+              <p><?= number_format((float) $latest_prediction['confidence_score'], 2) ?>%</p>
+            </div>
+          </div>
+
+          <div class="learning-signal">
+            <strong>Recommended Route:</strong>
+            <?= admin_incident_safe($latest_prediction['recommended_route']) ?>
+          </div>
+
+          <div class="learning-signal">
+            <strong>Recommended Action:</strong>
+            <?= admin_incident_safe($latest_prediction['recommended_action']) ?>
+          </div>
+
+          <?php if (!empty($latest_prediction['suggested_root_cause'])): ?>
+            <div class="learning-signal">
+              <strong>Suggested Root Cause:</strong>
+              <?= admin_incident_safe($latest_prediction['suggested_root_cause']) ?>
+            </div>
+          <?php endif; ?>
+
+          <?php if (!empty($latest_prediction['similar_incident_id'])): ?>
+            <div class="learning-signal">
+              <strong>Similar Case:</strong>
+              Incident #<?= (int) $latest_prediction['similar_incident_id'] ?>
+            </div>
+          <?php endif; ?>
+
+          <div class="learning-signal">
+            <strong>Explanation:</strong>
+            <?= admin_incident_safe($latest_prediction['explanation']) ?>
+          </div>
         </div>
       <?php endif; ?>
     </div>

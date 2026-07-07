@@ -282,6 +282,23 @@ function analyze_incident_aios(mysqli $conn, int $incident_id): ?array
 
 function save_incident_prediction(mysqli $conn, array $prediction): bool
 {
+    $incident_id = (int) $prediction['incident_id'];
+
+    /*
+     * Keep one latest prediction per incident.
+     * This prevents duplicate neural rows when admin clicks Analyze multiple times.
+     */
+    $cleanup = $conn->prepare(
+        "DELETE FROM incident_predictions
+         WHERE incident_id = ?"
+    );
+
+    if ($cleanup) {
+        $cleanup->bind_param('i', $incident_id);
+        $cleanup->execute();
+        $cleanup->close();
+    }
+
     $stmt = $conn->prepare(
         "INSERT INTO incident_predictions
          (incident_id, predicted_risk_score, predicted_priority,
@@ -294,7 +311,6 @@ function save_incident_prediction(mysqli $conn, array $prediction): bool
         return false;
     }
 
-    $incident_id = (int) $prediction['incident_id'];
     $risk = (float) $prediction['predicted_risk_score'];
     $priority = (string) $prediction['predicted_priority'];
     $route = (string) $prediction['recommended_route'];
