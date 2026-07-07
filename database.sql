@@ -372,3 +372,28 @@ CREATE TABLE IF NOT EXISTS incident_duties (
         ON DELETE SET NULL
 );
 
+
+
+CREATE TABLE IF NOT EXISTS ai_reasoning_notes (
+    note_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    prediction_id INT DEFAULT NULL,
+    model_name VARCHAR(120) NOT NULL,
+    reasoning_type ENUM('Summary','Action Plan','Root Cause','Executive Brief') NOT NULL DEFAULT 'Summary',
+    prompt_text MEDIUMTEXT NOT NULL,
+    response_text MEDIUMTEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_ai_reasoning_once (incident_id, reasoning_type),
+
+    CONSTRAINT fk_ai_reasoning_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_ai_reasoning_prediction
+        FOREIGN KEY (prediction_id)
+        REFERENCES incident_predictions(prediction_id)
+        ON DELETE SET NULL
+);
+
