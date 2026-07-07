@@ -129,3 +129,84 @@ INSERT INTO users (fullname, student_no, email, password, role) VALUES
 ('Student Demo', '190439', '190439@student.school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'student'),
 ('Admin Demo', 'ADM001', 'admin@school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'admin'),
 ('Technician Demo', 'ICT001', 'technician@school.ac.ke', '$2y$12$BFKm/pC9WS39sytEd7hpfuTqlZ0eOyIFwXpWILiZXbMP2Xrq6ev/y', 'technician');
+
+
+CREATE TABLE IF NOT EXISTS departments (
+    department_id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(40) NOT NULL UNIQUE,
+    name VARCHAR(120) NOT NULL,
+    domain VARCHAR(120) NOT NULL,
+    severity_level ENUM('Normal','Sensitive','Critical') NOT NULL DEFAULT 'Normal',
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS department_members (
+    member_id INT AUTO_INCREMENT PRIMARY KEY,
+    department_id INT NOT NULL,
+    user_id INT NOT NULL,
+    role_title VARCHAR(120) NOT NULL DEFAULT 'Responder',
+    is_primary TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_department_member (department_id, user_id),
+
+    CONSTRAINT fk_department_member_department
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_department_member_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS department_route_rules (
+    rule_id INT AUTO_INCREMENT PRIMARY KEY,
+    recommended_route VARCHAR(120) NOT NULL UNIQUE,
+    department_id INT NOT NULL,
+    default_action TEXT NOT NULL,
+    auto_assign TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_route_rule_department
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS incident_duties (
+    duty_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    department_id INT NOT NULL,
+    prediction_id INT DEFAULT NULL,
+    assigned_user_id INT DEFAULT NULL,
+    duty_status ENUM('Queued','Assigned','In Progress','Resolved','Closed') NOT NULL DEFAULT 'Queued',
+    duty_summary TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_incident_department_duty (incident_id, department_id),
+
+    CONSTRAINT fk_incident_duty_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_incident_duty_department
+        FOREIGN KEY (department_id)
+        REFERENCES departments(department_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_incident_duty_prediction
+        FOREIGN KEY (prediction_id)
+        REFERENCES incident_predictions(prediction_id)
+        ON DELETE SET NULL,
+
+    CONSTRAINT fk_incident_duty_user
+        FOREIGN KEY (assigned_user_id)
+        REFERENCES users(user_id)
+        ON DELETE SET NULL
+);
+

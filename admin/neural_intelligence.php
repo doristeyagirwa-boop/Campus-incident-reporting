@@ -5,6 +5,7 @@ require_role('admin');
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helpers.php';
 require_once __DIR__ . '/../includes/intelligence_engine.php';
+require_once __DIR__ . '/../includes/department_allocator.php';
 
 $page_title = 'Neural Intelligence';
 
@@ -30,6 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!$prediction) {
                 $error = 'Could not analyze incident.';
             } elseif (save_incident_prediction($conn, $prediction)) {
+                allocate_incident_duty($conn, $prediction);
+
                 audit_log(
                     $conn,
                     'NEURAL_INCIDENT_ANALYZED',
@@ -60,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $prediction = analyze_incident_aios($conn, (int) $row['incident_id']);
 
                 if ($prediction && save_incident_prediction($conn, $prediction)) {
+                    allocate_incident_duty($conn, $prediction);
                     $count++;
                 }
             }

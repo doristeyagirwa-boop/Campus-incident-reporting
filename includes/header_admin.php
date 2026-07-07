@@ -40,6 +40,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
          class="<?= $current_page === 'neural_intelligence.php' ? 'active' : '' ?>">
          <span class="nav-icon">🧬</span> Neural Engine
       </a>
+      <a href="<?= SITE_URL ?>/admin/department_command.php"
+         class="<?= $current_page === 'department_command.php' ? 'active' : '' ?>">
+         <span class="nav-icon">🏢</span> Department Command
+      </a>
       <a href="<?= SITE_URL ?>/admin/incidents.php"
          class="<?= $current_page === 'incidents.php' ? 'active' : '' ?>">
         <span class="nav-icon">🗂️</span> Manage Incidents
