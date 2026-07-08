@@ -4,17 +4,18 @@ require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/db.php';
 
 if (is_logged_in()) {
-    redirect_after_login($_SESSION['role']);
+    header('Location: ' . dashboard_for_role((string) ($_SESSION['role'] ?? '')));
+    exit;
 }
 
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $password = $_POST['password'] ?? '';
+    $email = trim((string) ($_POST['email'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
 
     if ($email === '' || $password === '') {
-        $error = 'Please enter your email and password.';
+        $error = 'Enter your email and password.';
     } else {
         $stmt = $conn->prepare(
             "SELECT user_id, fullname, email, password, role
@@ -24,15 +25,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
 
         if (!$stmt) {
-            $error = 'Login is temporarily unavailable.';
+            $error = 'Login service unavailable.';
         } else {
             $stmt->bind_param('s', $email);
             $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
+            $user = $stmt->get_result()->fetch_assoc();
             $stmt->close();
 
-            if ($user && password_verify($password, $user['password'])) {
+            if (!$user || !password_verify($password, (string) $user['password'])) {
+                $error = 'Invalid email or password.';
+            } else {
                 session_regenerate_id(true);
 
                 $_SESSION['user_id'] = (int) $user['user_id'];
@@ -40,65 +42,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['email'] = (string) $user['email'];
                 $_SESSION['role'] = (string) $user['role'];
 
-                redirect_after_login($_SESSION['role']);
-            } else {
-                $error = 'Invalid email or password.';
+                header('Location: ' . dashboard_for_role((string) $user['role']));
+                exit;
             }
         }
     }
 }
 
-$page_title = 'Login';
+function login_safe(string|null $value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= htmlspecialchars(SITE_NAME) ?> — Login</title>
-<link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
+    <meta charset="UTF-8">
+    <title>CampusGuard Login</title>
+    <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
 </head>
-<body>
-<div class="auth-page">
-  <div class="auth-card">
-    <div class="auth-brand">
-      <span class="crest">CG</span>
-      <div>
-        <h1><?= htmlspecialchars(SITE_NAME) ?></h1>
-        <p>Campus incident reporting portal</p>
-      </div>
+<body class="login-shell">
+    <div class="login-panel">
+        <div class="login-brand">
+            <div class="login-mark">CG</div>
+            <div>
+                <h1>CampusGuard</h1>
+                <p>Cognitive campus incident command.</p>
+            </div>
+        </div>
+
+        <div class="login-copy">
+            <h2>Sign in</h2>
+            <p>Students report issues. Staff receive only the work meant for their office.</p>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="form-error mb-16"><?= login_safe($error) ?></div>
+        <?php endif; ?>
+
+        <form method="post">
+            <div class="field">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="you@school.ac.ke" required autofocus>
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+
+            <button class="btn btn-primary btn-block" type="submit">
+                Continue
+            </button>
+        </form>
+
+        <div class="login-foot">
+            Local demo · Zero paid AI tokens · Role-based access
+        </div>
     </div>
 
-    <?php if ($error): ?>
-      <div class="form-error"><?= htmlspecialchars($error) ?></div>
-    <?php endif; ?>
-
-    <form method="post" autocomplete="on">
-      <div class="field">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" required placeholder="admin@school.ac.ke">
-      </div>
-
-      <div class="field">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required placeholder="Password1!">
-      </div>
-
-      <button class="btn btn-primary btn-block" type="submit">Login</button>
-    </form>
-
-    <div class="auth-demo">
-      <strong>Demo accounts</strong><br>
-      Admin: admin@school.ac.ke<br>
-      Student: 190439@student.school.ac.ke<br>
-      Technician: technician@school.ac.ke<br>
-      Password: <strong>Password1!</strong>
+    <div class="login-side">
+        <div class="login-side-card">
+            <span>Live routing</span>
+            <strong>Academics · Finance · Dining · Facilities · IT</strong>
+            <p>Every office gets a simple dashboard. The intelligence runs quietly behind the scenes.</p>
+        </div>
     </div>
-
-    <p class="auth-link">
-      No account? <a href="<?= SITE_URL ?>/register.php">Create student account</a>
-    </p>
-  </div>
-</div>
 </body>
 </html>

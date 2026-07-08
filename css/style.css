@@ -902,3 +902,221 @@ img { max-width: 100%; }
         width: 100%;
     }
 }
+
+/* CampusGuard refined login */
+.login-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(360px, 520px) 1fr;
+    background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 34%),
+        linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%);
+    color: #e5e7eb;
+}
+
+.login-panel {
+    margin: auto;
+    width: min(420px, calc(100% - 40px));
+    padding: 34px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #0f172a;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.login-brand {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.login-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    color: white;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.login-brand h1,
+.login-copy h2 {
+    margin: 0;
+}
+
+.login-brand p,
+.login-copy p,
+.login-foot {
+    color: #64748b;
+}
+
+.login-copy {
+    margin-bottom: 22px;
+}
+
+.login-foot {
+    margin-top: 22px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.login-side {
+    display: grid;
+    place-items: center;
+    padding: 48px;
+}
+
+.login-side-card {
+    max-width: 520px;
+    padding: 36px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px);
+}
+
+.login-side-card span {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #93c5fd;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+}
+
+.login-side-card strong {
+    display: block;
+    font-size: clamp(28px, 4vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -0.05em;
+}
+
+.login-side-card p {
+    color: #cbd5e1;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .login-side {
+        display: none;
+    }
+}
+
+/* CampusGuard refined login */
+.login-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(360px, 520px) 1fr;
+    background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.22), transparent 34%),
+        linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%);
+    color: #e5e7eb;
+}
+
+.login-panel {
+    margin: auto;
+    width: min(420px, calc(100% - 40px));
+    padding: 34px;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #0f172a;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+.login-brand {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.login-mark {
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    color: white;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+}
+
+.login-brand h1,
+.login-copy h2 {
+    margin: 0;
+}
+
+.login-brand p,
+.login-copy p,
+.login-foot {
+    color: #64748b;
+}
+
+.login-copy {
+    margin-bottom: 22px;
+}
+
+.login-foot {
+    margin-top: 22px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.login-side {
+    display: grid;
+    place-items: center;
+    padding: 48px;
+}
+
+.login-side-card {
+    max-width: 520px;
+    padding: 36px;
+    border-radius: 30px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    backdrop-filter: blur(18px);
+}
+
+.login-side-card span {
+    display: inline-block;
+    margin-bottom: 12px;
+    color: #93c5fd;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+}
+
+.login-side-card strong {
+    display: block;
+    font-size: clamp(28px, 4vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -0.05em;
+}
+
+.login-side-card p {
+    color: #cbd5e1;
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .login-side {
+        display: none;
+    }
+}

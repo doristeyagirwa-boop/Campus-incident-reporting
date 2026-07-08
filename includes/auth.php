@@ -24,10 +24,20 @@ function is_role(string $role): bool
 function dashboard_for_role(string $role): string
 {
     return match ($role) {
-        'admin' => '/admin/dashboard.php',
-        'student' => '/student/dashboard.php',
-        'technician' => '/technician/dashboard.php',
-        default => '/login.php',
+        'student' => SITE_URL . '/student/dashboard.php',
+        'admin' => SITE_URL . '/admin/dashboard.php',
+        'technician' => SITE_URL . '/technician/dashboard.php',
+
+        'registrar',
+        'lecturer',
+        'dean',
+        'finance',
+        'kitchen_manager',
+        'dining_manager',
+        'maintenance',
+        'security' => SITE_URL . '/institutional/dashboard.php',
+
+        default => SITE_URL . '/login.php',
     };
 }
 

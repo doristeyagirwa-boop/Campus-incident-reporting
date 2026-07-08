@@ -397,3 +397,97 @@ CREATE TABLE IF NOT EXISTS ai_reasoning_notes (
         ON DELETE SET NULL
 );
 
+
+
+CREATE TABLE IF NOT EXISTS phoenix_domains (
+    domain_id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(60) NOT NULL UNIQUE,
+    name VARCHAR(160) NOT NULL,
+    description TEXT NOT NULL,
+    risk_weight DECIMAL(5,2) NOT NULL DEFAULT 1.00,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS phoenix_domain_rules (
+    rule_id INT AUTO_INCREMENT PRIMARY KEY,
+    domain_id INT NOT NULL,
+    keyword VARCHAR(160) NOT NULL,
+    weight INT NOT NULL DEFAULT 10,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_phoenix_domain_keyword (domain_id, keyword),
+
+    CONSTRAINT fk_phoenix_rule_domain
+        FOREIGN KEY (domain_id)
+        REFERENCES phoenix_domains(domain_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS phoenix_intelligence_signals (
+    signal_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    domain_id INT NOT NULL,
+    signal_type ENUM(
+        'Domain Detection',
+        'Risk Escalation',
+        'Private Advisory',
+        'Operational Recommendation',
+        'Pattern Detection'
+    ) NOT NULL DEFAULT 'Domain Detection',
+    signal_score DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+    summary TEXT NOT NULL,
+    recommended_action TEXT NOT NULL,
+    visibility ENUM('Admin','Assigned Office','Private','System') NOT NULL DEFAULT 'Assigned Office',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_phoenix_incident_domain_signal (incident_id, domain_id, signal_type),
+
+    CONSTRAINT fk_phoenix_signal_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_phoenix_signal_domain
+        FOREIGN KEY (domain_id)
+        REFERENCES phoenix_domains(domain_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS phoenix_private_advisories (
+    advisory_id INT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    target_user_id INT NOT NULL,
+    domain_id INT NOT NULL,
+    advisory_type ENUM(
+        'Academic Attendance',
+        'Food Continuity',
+        'Finance Clearance',
+        'Facilities Relocation',
+        'IT Security',
+        'General'
+    ) NOT NULL DEFAULT 'General',
+    message TEXT NOT NULL,
+    is_read TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_phoenix_private_advisory_once (incident_id, target_user_id, advisory_type),
+
+    CONSTRAINT fk_phoenix_advisory_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_phoenix_advisory_target
+        FOREIGN KEY (target_user_id)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_phoenix_advisory_domain
+        FOREIGN KEY (domain_id)
+        REFERENCES phoenix_domains(domain_id)
+        ON DELETE CASCADE
+);
+
