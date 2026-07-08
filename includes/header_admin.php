@@ -42,11 +42,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </a>
       <a href="<?= SITE_URL ?>/admin/ai_reasoning.php"
          class="<?= $current_page === 'ai_reasoning.php' ? 'active' : '' ?>">
-         <span class="nav-icon">🤖</span> Assistant
+         <span class="nav-icon">🤖</span> Response Briefs
       </a>
       <a href="<?= SITE_URL ?>/admin/phoenix_command.php"
          class="<?= $current_page === 'phoenix_command.php' ? 'active' : '' ?>">
-         <span class="nav-icon">🔥</span> Cognitive Routing
+         <span class="nav-icon">🔥</span> Routing
       </a>
       <a href="<?= SITE_URL ?>/admin/department_command.php"
          class="<?= $current_page === 'department_command.php' ? 'active' : '' ?>">

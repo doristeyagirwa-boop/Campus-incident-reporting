@@ -9,11 +9,11 @@ function render_campus_assistant_widget(): void
 
     <div class="assistant-panel" id="campusAssistantPanel">
         <div class="assistant-head">
-            <strong>CampusGuard Helper</strong>
+            <strong>Need help?</strong>
             <button type="button" onclick="toggleCampusAssistant()">×</button>
         </div>
 
-        <p>How can I help you today?</p>
+        <p>What would you like to report?</p>
 
         <div class="assistant-options">
             <button type="button" onclick="fillAssistantProblem('WiFi or computer not working')">
@@ -38,7 +38,7 @@ function render_campus_assistant_widget(): void
         </div>
 
         <small>
-            Choose one, then submit a report. CampusGuard will route it to the right office.
+            Choose a common issue to start your report.
         </small>
     </div>
 
@@ -58,7 +58,7 @@ function render_campus_assistant_widget(): void
         }
 
         if (description && !description.value) {
-            description.value = 'I need help with: ' + text;
+            description.value = 'Issue: ' + text;
         }
 
         toggleCampusAssistant();

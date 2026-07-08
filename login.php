@@ -67,13 +67,13 @@ function login_safe(string|null $value): string
             <div class="login-mark">CG</div>
             <div>
                 <h1>CampusGuard</h1>
-                <p>Cognitive campus incident command.</p>
+                <p>Campus incident reporting and response.</p>
             </div>
         </div>
 
         <div class="login-copy">
             <h2>Sign in</h2>
-            <p>Students report issues. Staff receive only the work meant for their office.</p>
+            <p>Sign in to report, review, or resolve campus issues.</p>
         </div>
 
         <?php if ($error): ?>
@@ -97,15 +97,15 @@ function login_safe(string|null $value): string
         </form>
 
         <div class="login-foot">
-            Local demo · Zero paid AI tokens · Role-based access
+            Secure campus access · Role-based dashboards
         </div>
     </div>
 
     <div class="login-side">
         <div class="login-side-card">
             <span>Live routing</span>
-            <strong>Academics · Finance · Dining · Facilities · IT</strong>
-            <p>Every office gets a simple dashboard. The intelligence runs quietly behind the scenes.</p>
+            <strong>Campus services in one secure place</strong>
+            <p>Report issues, follow progress, and help the right office respond faster.</p>
         </div>
     </div>
 </body>
