@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/compliance_ledger.php';
 
 function eligibility_queue_message(
     mysqli $conn,
@@ -191,6 +192,18 @@ function run_exam_eligibility_review(mysqli $conn): int
             );
         }
     }
+
+    compliance_log_event(
+        $conn,
+        'EXAM_ELIGIBILITY_REVIEW_RUN',
+        'academic_eligibility_batch',
+        date('YmdHi'),
+        [
+            'records_touched' => $touched,
+            'attendance_threshold' => 70,
+            'privacy_mode' => 'role-minimized',
+        ]
+    );
 
     return $touched;
 }

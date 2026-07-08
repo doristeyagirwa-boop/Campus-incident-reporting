@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/compliance_ledger.php';
 
 function phoenix_normalize(string $value): string
 {
@@ -430,6 +431,37 @@ function phoenix_run_incident_intelligence(mysqli $conn, int $incident_id, strin
             $incident_id,
             'Phoenix AI generated/updated ' . $created . ' intelligence records for incident #' . $incident_id
         );
+    }
+
+    if ($created > 0) {
+        compliance_log_event(
+            $conn,
+            'PHOENIX_AI_INTELLIGENCE_RUN',
+            'incident',
+            $incident_id,
+            [
+                'source' => $source,
+                'records_touched' => $created,
+                'privacy_mode' => 'role-minimized',
+            ]
+        );
+    }
+
+    foreach ($scores as $domain) {
+        if ((float) $domain['score'] >= 100) {
+            compliance_issue_alert_token(
+                $conn,
+                'phoenix_ai',
+                'High',
+                'incident',
+                $incident_id,
+                [
+                    'reason' => 'Phoenix AI high-score domain threshold exceeded',
+                    'domain' => $domain['code'],
+                    'score' => $domain['score'],
+                ]
+            );
+        }
     }
 
     return $created;

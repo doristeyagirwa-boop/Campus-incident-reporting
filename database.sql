@@ -491,3 +491,39 @@ CREATE TABLE IF NOT EXISTS phoenix_private_advisories (
         ON DELETE CASCADE
 );
 
+
+
+CREATE TABLE IF NOT EXISTS compliance_ledger (
+    ledger_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    previous_hash CHAR(64) NOT NULL DEFAULT '0000000000000000000000000000000000000000000000000000000000000000',
+    event_hash CHAR(64) NOT NULL UNIQUE,
+    event_type VARCHAR(100) NOT NULL,
+    actor_user_id INT DEFAULT NULL,
+    actor_role VARCHAR(80) DEFAULT NULL,
+    entity_type VARCHAR(80) NOT NULL,
+    entity_hash CHAR(64) NOT NULL,
+    metadata_text TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_compliance_ledger_entity (entity_type, entity_hash),
+    INDEX idx_compliance_ledger_event_type (event_type),
+    INDEX idx_compliance_ledger_created_at (created_at)
+);
+
+CREATE TABLE IF NOT EXISTS compliance_alert_tokens (
+    token_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    token_hash CHAR(64) NOT NULL UNIQUE,
+    source VARCHAR(100) NOT NULL,
+    severity ENUM('Low','Medium','High','Critical') NOT NULL DEFAULT 'Medium',
+    entity_type VARCHAR(80) NOT NULL,
+    entity_hash CHAR(64) NOT NULL,
+    token_payload TEXT NOT NULL,
+    workflow_state ENUM('Queued','Evaluating','Routed','Closed') NOT NULL DEFAULT 'Queued',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_compliance_token_state (workflow_state),
+    INDEX idx_compliance_token_severity (severity),
+    INDEX idx_compliance_token_entity (entity_type, entity_hash)
+);
+
