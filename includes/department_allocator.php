@@ -501,5 +501,9 @@ function allocate_incident_duty(mysqli $conn, array $prediction): bool
         }
     }
 
+    if (function_exists('phoenix_run_incident_intelligence')) {
+        phoenix_run_incident_intelligence($conn, $incident_id, 'department_allocator');
+    }
+
     return true;
 }
