@@ -46,3 +46,29 @@ env/
 # Local databases
 *.sqlite3
 *.db
+
+# Backend local environment
+backend/.env
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+backend/.pytest_cache/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+
+# FastAPI backend local files
+backend/.env
+backend/venv/
+backend/.venv/
+backend/__pycache__/
+backend/.pytest_cache/
+backend/**/*.pyc
+backend/**/*.pyo
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
