@@ -6,6 +6,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helpers.php';
 require_once __DIR__ . '/../includes/intelligence_engine.php';
 require_once __DIR__ . '/../includes/department_allocator.php';
+require_once __DIR__ . '/../includes/campus_assistant_widget.php';
 require_once __DIR__ . '/../includes/dining_alerts.php';
 require_once __DIR__ . '/../includes/academic_space_engine.php';
 require_once __DIR__ . '/../includes/phoenix_engine.php';
@@ -191,4 +192,5 @@ include __DIR__ . '/../includes/header_student.php';
   </div>
 </form>
 
+<?php render_campus_assistant_widget(); ?>
 <?php include __DIR__ . '/../includes/footer_student.php'; ?>

@@ -49,16 +49,16 @@ $role_title = match ($role) {
 };
 
 $mission = match ($role) {
-    'registrar' => 'Review academic records, attendance, and exam eligibility.',
-    'lecturer' => 'Review your class attendance, grades, and course issues.',
-    'dean' => 'Review student welfare and serious academic risk.',
-    'finance' => 'Review fee balances, clearance, and exam finance holds.',
-    'kitchen_manager' => 'Coordinate food supply and replenishment.',
-    'dining_manager' => 'Handle cafe stock and student service.',
-    'maintenance' => 'Handle rooms, power, furniture, and repairs.',
-    'security' => 'Handle safety alerts and urgent risks.',
-    'technician' => 'Handle IT, network, and system incidents.',
-    default => 'Review assigned institutional work.',
+    'registrar' => 'Academic eligibility, attendance status, and registrar action.',
+    'lecturer' => 'Your class attendance, grades, and course issues.',
+    'dean' => 'Student welfare and high-risk academic concerns.',
+    'finance' => 'Fee clearance and student account holds.',
+    'kitchen_manager' => 'Food supply and replenishment.',
+    'dining_manager' => 'Cafe stock and student service.',
+    'maintenance' => 'Rooms, power, furniture, and repairs.',
+    'security' => 'Safety alerts and urgent risks.',
+    'technician' => 'IT, network, and system incidents.',
+    default => 'Assigned institutional work.',
 };
 
 $assigned = $conn->prepare(
@@ -94,15 +94,12 @@ $finance_result = null;
 $dean_result = null;
 
 if ($role === 'lecturer') {
-    /*
-     * Kenya Data Protection Act principle:
-     * Lecturer sees academic records needed for teaching only.
-     * No fee balances.
-     */
     $academic_result = $conn->query(
-        "SELECT u.fullname, u.email,
-                ar.unit_code, ar.unit_name,
-                ar.attendance_percent, ar.current_grade,
+        "SELECT u.fullname,
+                ar.unit_code,
+                ar.unit_name,
+                ar.attendance_percent,
+                ar.current_grade,
                 ar.exam_eligible,
                 CASE
                     WHEN ar.attendance_percent < 70 THEN 'Attendance below 70%'
@@ -119,14 +116,12 @@ if ($role === 'lecturer') {
 }
 
 if ($role === 'registrar') {
-    /*
-     * Registrar sees academic eligibility and clearance status.
-     * No fee amount.
-     */
     $academic_result = $conn->query(
-        "SELECT u.fullname, u.email,
-                ar.unit_code, ar.unit_name,
-                ar.attendance_percent, ar.current_grade,
+        "SELECT u.fullname,
+                ar.unit_code,
+                ar.unit_name,
+                ar.attendance_percent,
+                ar.current_grade,
                 ar.exam_eligible,
                 CASE
                     WHEN ar.attendance_percent < 70 THEN 'Attendance review needed'
@@ -142,12 +137,8 @@ if ($role === 'registrar') {
 }
 
 if ($role === 'dean') {
-    /*
-     * Dean sees risk status only.
-     * No fee amounts and no unnecessary financial detail.
-     */
     $dean_result = $conn->query(
-        "SELECT u.fullname, u.email,
+        "SELECT u.fullname,
                 ar.unit_code,
                 ar.attendance_percent,
                 ar.exam_eligible,
@@ -166,14 +157,12 @@ if ($role === 'dean') {
 }
 
 if ($role === 'finance') {
-    /*
-     * Finance sees financial clearance only.
-     * No grades.
-     * No detailed attendance.
-     */
     $finance_result = $conn->query(
-        "SELECT u.fullname, u.email,
-                fa.balance_amount, fa.clearance_status, fa.last_payment_ref,
+        "SELECT u.fullname,
+                u.email,
+                fa.balance_amount,
+                fa.clearance_status,
+                fa.last_payment_ref,
                 CASE
                     WHEN fa.balance_amount > 0 THEN 'Reminder needed'
                     ELSE 'Cleared'
@@ -287,7 +276,7 @@ $msg_count->close();
 
                 <?php while ($row = $dean_result->fetch_assoc()): ?>
                     <div class="incident-row">
-                        <span class="inc-id"><?= $row['exam_eligible'] ? 'Ready' : 'Risk' ?></span>
+                        <span class="inc-id">Risk</span>
 
                         <div class="inc-info">
                             <h4><?= inst_safe($row['fullname']) ?></h4>
