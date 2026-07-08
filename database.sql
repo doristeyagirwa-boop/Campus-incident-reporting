@@ -527,3 +527,79 @@ CREATE TABLE IF NOT EXISTS compliance_alert_tokens (
     INDEX idx_compliance_token_entity (entity_type, entity_hash)
 );
 
+
+
+CREATE TABLE IF NOT EXISTS department_data_boundaries (
+    boundary_id INT AUTO_INCREMENT PRIMARY KEY,
+    department_code VARCHAR(80) NOT NULL UNIQUE,
+    department_name VARCHAR(160) NOT NULL,
+    data_scope TEXT NOT NULL,
+    restricted_fields TEXT NOT NULL,
+    production_storage_target VARCHAR(160) NOT NULL,
+    rls_policy_name VARCHAR(160) NOT NULL,
+    kms_key_alias VARCHAR(160) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS role_data_access_matrix (
+    access_id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(80) NOT NULL,
+    domain_code VARCHAR(80) NOT NULL,
+    can_view_finance TINYINT(1) NOT NULL DEFAULT 0,
+    can_view_grades TINYINT(1) NOT NULL DEFAULT 0,
+    can_view_attendance TINYINT(1) NOT NULL DEFAULT 0,
+    can_view_medical TINYINT(1) NOT NULL DEFAULT 0,
+    can_view_full_identity TINYINT(1) NOT NULL DEFAULT 0,
+    access_summary TEXT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_role_domain_access (role_name, domain_code)
+);
+
+
+
+CREATE TABLE IF NOT EXISTS integration_endpoints (
+    endpoint_id INT AUTO_INCREMENT PRIMARY KEY,
+    endpoint_code VARCHAR(100) NOT NULL UNIQUE,
+    endpoint_name VARCHAR(160) NOT NULL,
+    endpoint_type ENUM('REST','gRPC','Webhook','SIS','LMS','CampusPolice','AIInference') NOT NULL,
+    base_url VARCHAR(255) NOT NULL,
+    auth_mode ENUM('OAuth2_mTLS','SignedWebhook','InternalToken','Disabled') NOT NULL DEFAULT 'Disabled',
+    rate_limit_per_minute INT NOT NULL DEFAULT 60,
+    is_enabled TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS integration_event_queue (
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    endpoint_id INT NOT NULL,
+    event_type VARCHAR(120) NOT NULL,
+    severity ENUM('Low','Medium','High','Critical') NOT NULL DEFAULT 'Medium',
+    token_hash CHAR(64) NOT NULL,
+    payload_text TEXT NOT NULL,
+    delivery_state ENUM('Queued','Dispatched','Failed','Suppressed') NOT NULL DEFAULT 'Queued',
+    attempts INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_integration_event_state (delivery_state),
+    INDEX idx_integration_event_severity (severity),
+    INDEX idx_integration_event_token (token_hash),
+
+    CONSTRAINT fk_integration_queue_endpoint
+        FOREIGN KEY (endpoint_id)
+        REFERENCES integration_endpoints(endpoint_id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ai_inference_rate_limits (
+    limit_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    client_key VARCHAR(160) NOT NULL UNIQUE,
+    window_start DATETIME NOT NULL,
+    request_count INT NOT NULL DEFAULT 0,
+    max_requests_per_minute INT NOT NULL DEFAULT 12,
+    blocked_until DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+);
+

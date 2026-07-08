@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/integration_broker.php';
 
 function local_ai_endpoint_base(): string
 {
@@ -167,6 +168,12 @@ function local_ai_health(): array
 
 function local_ai_generate(string $prompt, ?string $model = null, int $timeout_seconds = 25): ?string
 {
+    global $conn;
+
+    if ($conn instanceof mysqli && !ai_rate_limit_allow($conn, 'local_ollama')) {
+        return null;
+    }
+
     $model = $model ?: local_ai_model_name();
 
     $payload = [

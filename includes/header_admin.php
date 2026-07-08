@@ -90,3 +90,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </div>
     </div>
     <div class="content">
+
+<a href="<?= SITE_URL ?>/admin/compliance_command.php"
+   class="<?= $current_page === 'compliance_command.php' ? 'active' : '' ?>">
+   <span class="nav-icon">🛡️</span> Compliance
+</a>
