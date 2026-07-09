@@ -603,3 +603,28 @@ CREATE TABLE IF NOT EXISTS ai_inference_rate_limits (
     updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
 );
 
+
+
+CREATE TABLE IF NOT EXISTS backend_bridge_advisories (
+    advisory_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    incident_id INT NOT NULL,
+    source VARCHAR(80) NOT NULL DEFAULT 'fastapi_bridge',
+    domain_hint VARCHAR(100) NOT NULL,
+    priority_hint VARCHAR(40) NOT NULL,
+    risk_hint INT NOT NULL DEFAULT 0,
+    confidence DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    recommended_action TEXT NOT NULL,
+    matched_terms TEXT DEFAULT NULL,
+    raw_payload TEXT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_backend_bridge_incident (incident_id),
+    INDEX idx_backend_bridge_domain (domain_hint),
+    INDEX idx_backend_bridge_priority (priority_hint),
+
+    CONSTRAINT fk_backend_bridge_incident
+        FOREIGN KEY (incident_id)
+        REFERENCES incidents(incident_id)
+        ON DELETE CASCADE
+);
+

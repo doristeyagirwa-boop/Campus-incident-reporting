@@ -10,6 +10,7 @@ require_once __DIR__ . '/../includes/campus_assistant_widget.php';
 require_once __DIR__ . '/../includes/dining_alerts.php';
 require_once __DIR__ . '/../includes/academic_space_engine.php';
 require_once __DIR__ . '/../includes/phoenix_engine.php';
+require_once __DIR__ . '/../includes/backend_bridge.php';
 
 $page_title = 'Report an Incident';
 $error = $success = '';
@@ -85,7 +86,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'NEURAL_INCIDENT_AUTO_ANALYZED',
                         'incident',
                         $new_id,
-                        'AIOS automatically analyzed and routed student-submitted incident #' . $new_id
+                        'System automatically analyzed and routed student-submitted incident #' . $new_id
+                    );
+                }
+
+                $backend_analysis = backend_bridge_analyze_incident(
+                    $title,
+                    $description,
+                    (string) $cat_id,
+                    $location
+                );
+
+                if ($backend_analysis && backend_bridge_save_advisory($conn, $new_id, $backend_analysis)) {
+                    audit_log(
+                        $conn,
+                        'FASTAPI_BACKEND_BRIDGE_ANALYZED',
+                        'incident',
+                        $new_id,
+                        'Optional backend service analyzed student-submitted incident #' . $new_id
                     );
                 }
 

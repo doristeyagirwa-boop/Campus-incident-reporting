@@ -21,6 +21,10 @@ function backend_bridge_post_json(string $path, array $payload, int $timeout_sec
         return null;
     }
 
+    if (!function_exists('curl_init')) {
+        return null;
+    }
+
     $ch = curl_init($url);
 
     if (!$ch) {
@@ -74,4 +78,61 @@ function backend_bridge_analyze_incident(
         ],
         2
     );
+}
+
+function backend_bridge_save_advisory(
+    mysqli $conn,
+    int $incident_id,
+    array $analysis
+): bool {
+    $domain = (string) ($analysis['domain'] ?? 'General');
+    $priority = (string) ($analysis['priority_hint'] ?? 'Low');
+    $risk = (int) ($analysis['risk_hint'] ?? 0);
+    $confidence = (float) ($analysis['confidence'] ?? 0.00);
+    $recommended_action = (string) ($analysis['recommended_action'] ?? 'Review incident.');
+
+    $matched_terms = json_encode(
+        $analysis['matched_terms'] ?? [],
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    );
+
+    if ($matched_terms === false) {
+        $matched_terms = '[]';
+    }
+
+    $raw_payload = json_encode(
+        $analysis,
+        JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    );
+
+    if ($raw_payload === false) {
+        $raw_payload = '{}';
+    }
+
+    $stmt = $conn->prepare(
+        "INSERT INTO backend_bridge_advisories
+         (incident_id, domain_hint, priority_hint, risk_hint, confidence, recommended_action, matched_terms, raw_payload)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    );
+
+    if (!$stmt) {
+        return false;
+    }
+
+    $stmt->bind_param(
+        'issidsss',
+        $incident_id,
+        $domain,
+        $priority,
+        $risk,
+        $confidence,
+        $recommended_action,
+        $matched_terms,
+        $raw_payload
+    );
+
+    $ok = $stmt->execute();
+    $stmt->close();
+
+    return $ok;
 }
