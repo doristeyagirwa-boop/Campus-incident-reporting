@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/audit_helpers.php';
 require_once __DIR__ . '/../includes/phoenix_engine.php';
 
-$page_title = 'Phoenix AI Command';
+$page_title = 'AI Command';
 
 function phoenix_safe(string|null $value): string
 {
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        $success = 'Phoenix AI sweep completed. Intelligence records touched: ' . $count;
+        $success = 'AI sweep completed. Intelligence records touched: ' . $count;
     }
 }
 
@@ -93,19 +93,19 @@ include __DIR__ . '/../includes/header_admin.php';
 
 <div class="panel mb-24">
   <div class="panel-head">
-    <h3>Phoenix AI Cognitive Sweep</h3>
+    <h3>AI Cognitive Sweep</h3>
   </div>
 
   <div class="panel-body">
     <p class="text-muted">
-      Phoenix AI reads active incidents, classifies them across five institutional domains,
+      AI reads active incidents, classifies them across five institutional domains,
       creates private staff advisories, and records cognitive intelligence signals.
     </p>
 
-    <form method="post" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Phoenix AI Running...';">
+    <form method="post" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='AI Running...';">
       <input type="hidden" name="action" value="run_sweep">
       <button class="btn btn-primary" type="submit">
-        Run Phoenix AI Sweep
+        Run AI Sweep
       </button>
     </form>
   </div>
@@ -127,13 +127,13 @@ include __DIR__ . '/../includes/header_admin.php';
 
 <div class="panel mb-24">
   <div class="panel-head">
-    <h3>Phoenix Intelligence Signals</h3>
+    <h3>AI Intelligence Signals</h3>
   </div>
 
   <?php if (!$signals || $signals->num_rows === 0): ?>
     <div class="empty-state">
       <span class="empty-icon">🔥</span>
-      <p>No Phoenix intelligence signals yet.</p>
+      <p>No AI intelligence signals yet.</p>
     </div>
   <?php else: ?>
     <?php while ($signal = $signals->fetch_assoc()): ?>
@@ -181,7 +181,7 @@ include __DIR__ . '/../includes/header_admin.php';
 
   <?php if (!$advisories || $advisories->num_rows === 0): ?>
     <div class="empty-state">
-      <p>No private Phoenix advisories yet.</p>
+      <p>No private AI advisories yet.</p>
     </div>
   <?php else: ?>
     <?php while ($advisory = $advisories->fetch_assoc()): ?>

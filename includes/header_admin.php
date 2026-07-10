@@ -42,7 +42,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </a>
       <a href="<?= SITE_URL ?>/admin/ai_reasoning.php"
          class="<?= $current_page === 'ai_reasoning.php' ? 'active' : '' ?>">
-         <span class="nav-icon">🤖</span> Response Briefs
+         <span class="nav-icon">AI</span> Response Briefs
       </a>
       <a href="<?= SITE_URL ?>/admin/phoenix_command.php"
          class="<?= $current_page === 'phoenix_command.php' ? 'active' : '' ?>">
@@ -54,7 +54,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </a>
       <a href="<?= SITE_URL ?>/admin/academic_command.php"
          class="<?= $current_page === 'academic_command.php' ? 'active' : '' ?>">
-         <span class="nav-icon">🎓</span> Academic Command
+         <span class="nav-icon">AC</span> Academic Command
       </a>
       <a href="<?= SITE_URL ?>/admin/dining_command.php"
          class="<?= $current_page === 'dining_command.php' ? 'active' : '' ?>">
@@ -93,5 +93,5 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <a href="<?= SITE_URL ?>/admin/compliance_command.php"
    class="<?= $current_page === 'compliance_command.php' ? 'active' : '' ?>">
-   <span class="nav-icon">🛡️</span> Compliance
+   <span class="nav-icon">CO</span> Compliance
 </a>

@@ -350,7 +350,7 @@ function phoenix_save_private_advisory(
             $conn,
             $target_user_id,
             $incident_id,
-            'Phoenix AI private advisory: ' . $message
+            'AI private advisory: ' . $message
         );
     }
 
@@ -383,7 +383,7 @@ function phoenix_run_incident_intelligence(mysqli $conn, int $incident_id, strin
         $domain_name = (string) $domain['name'];
         $score = (float) $domain['score'];
 
-        $summary = 'Phoenix AI detected ' . $domain_name .
+        $summary = 'AI detected ' . $domain_name .
             ' relevance for incident #' . $incident_id .
             ' with cognitive score ' . number_format($score, 1) .
             '. Source: ' . $source . '.';
@@ -429,7 +429,7 @@ function phoenix_run_incident_intelligence(mysqli $conn, int $incident_id, strin
             'PHOENIX_AI_INTELLIGENCE_RUN',
             'incident',
             $incident_id,
-            'Phoenix AI generated/updated ' . $created . ' intelligence records for incident #' . $incident_id
+            'AI generated/updated ' . $created . ' intelligence records for incident #' . $incident_id
         );
     }
 
@@ -456,7 +456,7 @@ function phoenix_run_incident_intelligence(mysqli $conn, int $incident_id, strin
                 'incident',
                 $incident_id,
                 [
-                    'reason' => 'Phoenix AI high-score domain threshold exceeded',
+                    'reason' => 'AI high-score domain threshold exceeded',
                     'domain' => $domain['code'],
                     'score' => $domain['score'],
                 ]

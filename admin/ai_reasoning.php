@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $success = 'Local AI reasoning generated successfully in ' . $elapsed . ' seconds.';
             } else {
-                $error = 'Local AI did not respond. Keep deterministic AIOS active, then check Ollama runtime/model.';
+                $error = 'Local AI did not respond. Keep deterministic AIOS active, then check local model runtime.';
             }
         }
     }
@@ -95,7 +95,7 @@ include __DIR__ . '/../includes/header_admin.php';
 
 <div class="stat-grid">
   <div class="stat-card">
-    <div class="s-label">Ollama Status</div>
+    <div class="s-label">Local Model Status</div>
     <div class="s-value"><?= $ai_health['available'] ? 'Online' : 'Offline' ?></div>
   </div>
 
@@ -149,7 +149,7 @@ include __DIR__ . '/../includes/header_admin.php';
   <div class="panel-body">
     <p class="text-muted">
       The deterministic AIOS neural engine handles risk, route, duties, classrooms, dining, and academic escalation instantly.
-      Ollama adds a polished executive brief with zero paid tokens.
+      The local model adds a polished executive brief with local processing.
     </p>
 
     <form method="post" onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').innerText='Generating Local AI Brief...';">
@@ -195,7 +195,7 @@ include __DIR__ . '/../includes/header_admin.php';
 
   <?php if (!$notes || $notes->num_rows === 0): ?>
     <div class="empty-state">
-      <span class="empty-icon">🤖</span>
+      <span class="empty-icon">AI</span>
       <p>No AI reasoning notes yet.</p>
     </div>
   <?php else: ?>

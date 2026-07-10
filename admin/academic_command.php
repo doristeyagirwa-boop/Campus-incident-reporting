@@ -151,7 +151,7 @@ include __DIR__ . '/../includes/header_admin.php';
 
   <?php if (!$relocations || $relocations->num_rows === 0): ?>
     <div class="empty-state">
-      <span class="empty-icon">🎓</span>
+      <span class="empty-icon">AC</span>
       <p>No classroom relocation recommendations yet.</p>
     </div>
   <?php else: ?>

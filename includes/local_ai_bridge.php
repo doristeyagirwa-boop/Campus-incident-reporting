@@ -247,7 +247,7 @@ function build_incident_reasoning_prompt(array $context, string $reasoning_type)
     /*
      * Short prompt = faster generation.
      * The deterministic neural-symbolic engine has already done routing/risk/duties.
-     * Ollama only converts that into polished incident command language.
+     * The local model only converts that into polished incident command language.
      */
     return
         "You are a senior campus incident command analyst.\n" .
