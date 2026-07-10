@@ -55,58 +55,59 @@ function login_safe(string|null $value): string
 }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CampusGuard Login</title>
+    <title>Login — <?= login_safe(SITE_NAME) ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="<?= SITE_URL ?>/css/style.css">
 </head>
-<body class="login-shell">
-    <div class="login-panel">
-        <div class="login-brand">
-            <div class="login-mark">CG</div>
-            <div>
-                <h1>CampusGuard</h1>
-                <p>Campus incident reporting and response.</p>
-            </div>
-        </div>
-
-        <div class="login-copy">
-            <h2>Sign in</h2>
-            <p>Sign in to report, review, or resolve campus issues.</p>
-        </div>
-
-        <?php if ($error): ?>
-            <div class="form-error mb-16"><?= login_safe($error) ?></div>
-        <?php endif; ?>
-
-        <form method="post">
-            <div class="field">
-                <label>Email</label>
-                <input type="email" name="email" placeholder="you@school.ac.ke" required autofocus>
+<body class="login-shell su-login-shell">
+    <main class="su-login-stage">
+        <section class="su-login-card">
+            <div class="su-login-brand">
+                <div class="su-login-mark">CG</div>
+                <div>
+                    <h1><?= login_safe(SITE_NAME) ?></h1>
+                    <p>Sign in to continue</p>
+                </div>
             </div>
 
-            <div class="field">
-                <label>Password</label>
-                <input type="password" name="password" placeholder="Password" required>
+            <?php if ($error): ?>
+                <div class="form-error mb-16"><?= login_safe($error) ?></div>
+            <?php endif; ?>
+
+            <form method="post" class="su-login-form">
+                <div class="field">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="you@school.ac.ke" required autofocus>
+                </div>
+
+                <div class="field">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+
+                <button class="btn btn-primary btn-block" type="submit">
+                    Login
+                </button>
+            </form>
+
+            <div class="su-login-links">
+                <a href="<?= SITE_URL ?>/register.php">Create account</a>
+                <span></span>
+                <a href="<?= SITE_URL ?>/index.php">Back home</a>
             </div>
+        </section>
 
-            <button class="btn btn-primary btn-block" type="submit">
-                Continue
-            </button>
-        </form>
-
-        <div class="login-foot">
-            Secure campus access · Role-based dashboards
-        </div>
-    </div>
-
-    <div class="login-side">
-        <div class="login-side-card">
-            <span>Live routing</span>
-            <strong>Campus services in one secure place</strong>
-            <p>Report issues, follow progress, and help the right office respond faster.</p>
-        </div>
-    </div>
+        <section class="su-login-visual" aria-hidden="true">
+            <div class="su-orb su-orb-one"></div>
+            <div class="su-orb su-orb-two"></div>
+            <div class="su-orb su-orb-three"></div>
+            <div class="su-line su-line-one"></div>
+            <div class="su-line su-line-two"></div>
+            <div class="su-glass-card"></div>
+        </section>
+    </main>
 </body>
 </html>

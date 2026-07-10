@@ -62,12 +62,13 @@ function fetch_admin_incident(mysqli $conn, int $id): ?array
                 reporter.fullname AS reporter,
                 reporter.email AS reporter_email,
                 reporter.user_id AS reporter_id,
-                technician.fullname AS technician_name,
-                technician.email AS technician_email
+                owner.fullname AS owner_name,
+                owner.email AS owner_email,
+                owner.role AS owner_role
          FROM incidents i
          JOIN categories c ON i.category_id = c.category_id
          JOIN users reporter ON i.user_id = reporter.user_id
-         LEFT JOIN users technician ON i.assigned_to = technician.user_id
+         LEFT JOIN users owner ON i.assigned_to = owner.user_id
          WHERE i.incident_id = ?
          LIMIT 1"
     );
@@ -159,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($old_assigned_to !== $assigned_to) {
-                    $changes[] = 'technician assignment changed';
+                    $changes[] = 'responsible person changed';
 
                     if ($assigned_to !== null) {
                         create_notification(
@@ -173,7 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $conn,
                             (int) $inc['reporter_id'],
                             $id,
-                            'A technician has been assigned to your incident "' . $inc['title'] . '".'
+                            'A responsible office has been assigned to your incident "' . $inc['title'] . '".'
                         );
                     }
                 }
@@ -271,7 +272,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$technicians = $conn->query(
+$responsible_users = $conn->query(
     "SELECT user_id, fullname, email
      FROM users
      WHERE role = 'technician'
@@ -366,7 +367,7 @@ include __DIR__ . '/../includes/header_admin.php';
 
       <div class="tracking-meta mt-16">
         <span>Reporter email: <?= admin_incident_safe($inc['reporter_email']) ?></span>
-        <span>Assigned technician: <?= admin_incident_safe($inc['technician_name'] ?: 'Unassigned') ?></span>
+        <span>Responsible person: <?= admin_incident_safe($inc['owner_name'] ?: 'Unassigned') ?></span>
         <span>Last updated: <?= admin_incident_date($inc['updated_at']) ?></span>
       </div>
 
@@ -636,14 +637,14 @@ include __DIR__ . '/../includes/header_admin.php';
         </div>
 
         <div class="field">
-          <label for="assigned_to">Assign Technician</label>
+          <label for="assigned_to">Assign Responsible Person</label>
           <select id="assigned_to" name="assigned_to">
             <option value="">— Unassigned —</option>
-            <?php if ($technicians): ?>
-              <?php while ($tech = $technicians->fetch_assoc()): ?>
+            <?php if ($responsible_users): ?>
+              <?php while ($tech = $responsible_users->fetch_assoc()): ?>
                 <option value="<?= (int) $tech['user_id'] ?>"
                   <?= (int) $inc['assigned_to'] === (int) $tech['user_id'] ? 'selected' : '' ?>>
-                  <?= admin_incident_safe($tech['fullname']) ?> — <?= admin_incident_safe($tech['email']) ?>
+                  <?= admin_incident_safe($tech['fullname']) ?> — <?= admin_incident_safe($tech['role']) ?> — <?= admin_incident_safe($tech['email']) ?>
                 </option>
               <?php endwhile; ?>
             <?php endif; ?>

@@ -1,0 +1,8 @@
+ .gitignore                       |  52 +++++++++++++++
+ backend/.env.example             |  15 +++--
+ backend/app/api/router.py        |   8 +++
+ backend/app/api/routes/bridge.py | 106 ++++++++++++++++++++++++++++++
+ database.sql                     |  25 +++++++
+ includes/backend_bridge.php      | 138 +++++++++++++++++++++++++++++++++++++++
+ student/report.php               |  20 +++++-
+ 7 files changed, 358 insertions(+), 6 deletions(-)

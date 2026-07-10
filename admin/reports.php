@@ -10,7 +10,7 @@ $page_title = 'Reports & Analytics';
 $total_incidents = report_count($conn, "SELECT COUNT(*) FROM incidents");
 $total_users = report_count($conn, "SELECT COUNT(*) FROM users");
 $total_students = report_count($conn, "SELECT COUNT(*) FROM users WHERE role = 'student'");
-$total_technicians = report_count($conn, "SELECT COUNT(*) FROM users WHERE role = 'technician'");
+$total_responders = report_count($conn, "SELECT COUNT(*) FROM users WHERE role IN ('technician','registrar','lecturer','dean','finance','kitchen_manager','dining_manager','maintenance','security')");
 
 $status_stats = report_status_breakdown($conn);
 $priority_stats = report_priority_breakdown($conn);
@@ -42,8 +42,8 @@ include __DIR__ . '/../includes/header_admin.php';
     <div class="s-value"><?= $total_students ?></div>
   </div>
   <div class="stat-card">
-    <div class="s-label">Technicians</div>
-    <div class="s-value"><?= $total_technicians ?></div>
+    <div class="s-label">Staff Responders</div>
+    <div class="s-value"><?= $total_responders ?></div>
   </div>
 </div>
 

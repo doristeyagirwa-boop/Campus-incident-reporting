@@ -49,22 +49,22 @@ if (is_logged_in()) {
 <div class="category-strip">
   <div class="category-grid">
     <div class="cat-card net">
-      <span class="cat-icon">📶</span>
+      <span class="cat-icon">NET</span>
       <h3>Network</h3>
       <p>WiFi outages, slow internet, rogue access points, authentication failures.</p>
     </div>
     <div class="cat-card sec">
-      <span class="cat-icon">🛡️</span>
+      <span class="cat-icon">SEC</span>
       <h3>Security</h3>
       <p>Phishing emails, suspicious activity, unauthorised access attempts.</p>
     </div>
     <div class="cat-card infra">
-      <span class="cat-icon">🏗️</span>
+      <span class="cat-icon">OPS</span>
       <h3>Infrastructure</h3>
       <p>Power outages, broken equipment, facility faults.</p>
     </div>
     <div class="cat-card acad">
-      <span class="cat-icon">🎓</span>
+      <span class="cat-icon">ACD</span>
       <h3>Academic</h3>
       <p>LMS errors, computer lab faults, portal access issues.</p>
     </div>

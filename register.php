@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <header class="topbar">
   <div class="topbar-brand"><span class="crest">CG</span> <?= SITE_NAME ?></div>
-  <nav class="topbar-nav"><a href="<?= SITE_URL ?>">← Back to Home</a></nav>
+  <nav class="topbar-nav"><a href="<?= SITE_URL ?>">Back to Home</a></nav>
 </header>
 
 <div class="auth-wrap">

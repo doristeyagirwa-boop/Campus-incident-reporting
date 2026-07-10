@@ -83,7 +83,7 @@ include __DIR__ . '/../includes/header_student.php';
 
   <?php if ($recent_rows->num_rows === 0): ?>
   <div class="empty-state">
-    <span class="empty-icon">📭</span>
+    <span class="empty-icon">No reports</span>
     <p>You haven't submitted any reports yet.</p>
     <a href="<?= SITE_URL ?>/student/report.php" class="btn btn-primary mt-16">Report your first incident</a>
   </div>
@@ -110,7 +110,7 @@ include __DIR__ . '/../includes/header_student.php';
   </a>
   <?php endwhile; ?>
   <div style="padding:14px 20px;">
-    <a href="<?= SITE_URL ?>/student/my_reports.php" class="text-sm" style="color:var(--navy);font-weight:600;">View all my reports →</a>
+    <a href="<?= SITE_URL ?>/student/my_reports.php" class="text-sm" style="color:var(--navy);font-weight:600;">View all my reports</a>
   </div>
   <?php endif; ?>
 </div>

@@ -153,7 +153,7 @@ include __DIR__ . '/../includes/header_student.php';
               <?php $cats->data_seek(0); while ($cat = $cats->fetch_assoc()): ?>
               <option value="<?= $cat['category_id'] ?>"
                 <?= (($_POST['category_id'] ?? '') == $cat['category_id']) ? 'selected' : '' ?>>
-                <?= $cat['icon'] ?> <?= htmlspecialchars($cat['category_name']) ?>
+                <?= htmlspecialchars($cat['category_name']) ?>
               </option>
               <?php endwhile; ?>
             <?php endif; ?>
